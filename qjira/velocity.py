@@ -4,10 +4,12 @@ carried over for every sprint associated with an issue.
 '''
 from operator import itemgetter
 from functools import reduce as reduce_
+from collections import OrderedDict
 import datetime
 
 from .command import PivotCommand
 from .log import Log
+from . import headers
 
 DEFAULT_POINTS = 0.0
 
@@ -30,19 +32,35 @@ class VelocityCommand(PivotCommand):
     completed points - finished in this sprint (status = Closed, Done)
     '''
 
-    def __init__(self, include_bugs=False, forecast=False, raw=False, *args, **kwargs):
+    def __init__(self, include_bugs=False, forecast=False, raw=False, filter_by_date=None, *args, **kwargs):
         super(VelocityCommand, self).__init__(*args, **kwargs)
         self._include_bugs = include_bugs
         self._forecast = forecast
         self._raw = raw
+        self._filter_by_date = filter_by_date
+        self._target_sprint_ids = set()
 
         if raw:
-            self._header = ['project_key','fixVersions_0_name','issuetype_name','issue_key',
-                            'sprint_name','sprint_startDate','sprint_endDate','story_points',
-                            'planned_points','carried_points','completed_points']
+            self._header = OrderedDict([headers.get_column('project_key'),
+                                        headers.get_column('fixVersions_0_name'),
+                                        headers.get_column('issuetype_name'),
+                                        headers.get_column('issue_key'),
+                                        headers.get_column('sprint_name'),
+                                        headers.get_column('sprint_startDate'),
+                                        headers.get_column('sprint_endDate'),
+                                        headers.get_column('story_points'),
+                                        headers.get_column('planned_points'),
+                                        headers.get_column('carried_points'),
+                                        headers.get_column('completed_points')])
         else:
-            self._header = ['project_key', 'sprint_name', 'sprint_startDate','sprint_endDate',
-                            'planned_points','carried_points','story_points','completed_points']
+            self._header = OrderedDict([headers.get_column('project_key'),
+                                        headers.get_column('sprint_name'),
+                                        headers.get_column('sprint_startDate'),
+                                        headers.get_column('sprint_endDate'),
+                                        headers.get_column('story_points'),
+                                        headers.get_column('planned_points'),
+                                        headers.get_column('carried_points'),
+                                        headers.get_column('completed_points')])
             
     @property
     def pivot_field(self):
@@ -73,8 +91,14 @@ class VelocityCommand(PivotCommand):
 
         for s in self._raw_process(rows):
             sprint_id = s['sprint_id']
+            
+            if sprint_id not in self._target_sprint_ids:
+                Log.debug('Skipping filtered sprint %d'.format(sprint_id))
+                continue
+
+            Log.debug('Updating velocity in sprint %d'.format(sprint_id))
             if not sprint_id in results:
-                results[sprint_id] = {k:v for k, v in s.items() if k in self._header}
+                results[sprint_id] = {k:v for k, v in s.items() if k in self.header_keys}
                 current_points = (0, 0, 0, 0)
             else:
                 current_points = self._get_points(results[sprint_id])
@@ -110,13 +134,20 @@ class VelocityCommand(PivotCommand):
         last_issue_seen = None
         counter = 0
         for idx,row in enumerate(rows):
-            if not row.get('sprint_name'):
+            if not row.get('sprint_id'):
                 continue
             
             if not self._forecast and not row.get('sprint_completeDate'):
                 #print ('> skip incomplete sprint')
                 continue
 
+            # including bugs causes inclusion of old sprints, track sprint_ids of the stories for filtering
+            sprint_id = row['sprint_id']
+            if self._filter_by_date and self._filter_by_date <= row.get('sprint_startDate', datetime.date.max):
+                self._target_sprint_ids.add(sprint_id)
+            elif row['issuetype_name'] == 'Story':
+                self._target_sprint_ids.add(sprint_id)
+            
             if row['issue_key'] is not last_issue_seen:
                 last_issue_seen = row['issue_key']
                 counter = 0

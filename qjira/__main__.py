@@ -11,6 +11,7 @@ import argparse
 import locale
 
 from requests.exceptions import HTTPError
+from dateutil import parser as date_parser
 
 from .velocity import VelocityCommand
 from .cycletime import CycleTimeCommand
@@ -19,7 +20,6 @@ from .techdebt import TechDebtCommand
 from .backlog import BacklogCommand
 from .jql import JQLCommand
 from .log import Log
-from . import unicode_csv_writer
 from . import credential_store as creds
 
 PY3 = sys.version_info > (3,)
@@ -49,23 +49,19 @@ def _open(filepath, encoding):
                        newline='')
     else:
         return io.open(filepath, 'wb')
+
+def date_string(string):
+    '''Convert supplied string to a datetime.date() object.'''
+    try:
+        value = date_parser.parse(string)
+    except ValueError as ve:
+        raise argparse.ArgumentTypeError(ve)
+    return value.date()
     
 def create_parser():
 
-
     parser = argparse.ArgumentParser(prog='qjira',
-                                     description='Export data from Jira to CSV format')
-    
-    parser.add_argument('-o', '--outfile',
-                               metavar='FILENAME',
-                               nargs='?',
-                               default=None,
-                               help='Output file (.csv) [default: stdout]')
-
-    parser.add_argument('--no-progress',
-                               action='store_true',
-                               dest='suppress_progress',
-                               help='Hide data download progress')       
+                                     description='Exports data from Jira to CSV format')
 
     parser.add_argument('-b', '--base',
                                dest='base_url',
@@ -82,15 +78,6 @@ def create_parser():
                                metavar='PWD',
                                help='Password (insecure), if blank will prommpt',
                                default=None)
-    
-    parser.add_argument('--encoding',
-                               metavar='ENC',
-                               default='ASCII',
-                               help='Specify an output encoding. In Python 2.x, only default ASCII is supported.')
-    parser.add_argument('--delimiter',
-                               metavar='CHAR',
-                               default=',',
-                               help='Specify a CSV delimiter [default: comma].\nFor bash support escape the character with $, such as $\'\\t\'')
 
     parser.add_argument('-d',
                         dest='debugLevel',
@@ -104,7 +91,30 @@ def create_parser():
                                        dest='subparser_name',
                                        help='Available commands to process data')
 
+    # Note: may want to move output related options to the common set
     parser_common = argparse.ArgumentParser(add_help=False)
+        
+    parser_common.add_argument('-o', '--outfile',
+                               metavar='FILENAME',
+                               nargs='?',
+                               default=None,
+                               help='Output file (.csv) [default: stdout]')
+
+    parser_common.add_argument('--no-progress',
+                               action='store_true',
+                               dest='suppress_progress',
+                               help='Hide data download progress')       
+
+    parser_common.add_argument('--encoding',
+                               metavar='ENC',
+                               default='ASCII',
+                               help='Specify an output encoding. In Python 2.x, only default ASCII is supported.')
+    
+    parser_common.add_argument('--delimiter',
+                               metavar='CHAR',
+                               default=',',
+                               help='Specify a CSV delimiter [default: comma].\nFor bash support escape the character with $, such as $\'\\t\'')
+
     
     parser_common.add_argument('-A', '--all-fields',
                                action='store_true',
@@ -142,6 +152,11 @@ def create_parser():
     parser_velocity.add_argument('--raw', '-R',
                                  action='store_true',
                                  help='Output all rows instead of summary by sprint name.')
+    parser_velocity.add_argument('--filter-by-date',
+                                 type=date_string,
+                                 metavar='START',
+                                 default=None,
+                                 help='Filter sprints starting earlier than START date.')
     parser_velocity.set_defaults(func=VelocityCommand)
 
     parser_summary = subparsers.add_parser('summary',
@@ -151,6 +166,12 @@ def create_parser():
                                 action='store_true',
                                 dest='mark_if_new',
                                 help='Mark docs linked within past 2 weeks')
+
+    parser_summary.add_argument('--csv',
+                                action='store_true',
+                                dest='use_csv_formatter',
+                                help='Output CSV rather than HTML Fragments')
+    
     parser_summary.set_defaults(func=SummaryCommand)
 
     parser_techdebt = subparsers.add_parser('debt',
@@ -220,9 +241,10 @@ def main(args=None):
 
     Log.debug('Args: {0}'.format(func_args))
     command = my_args.func(**func_args)
+    output_writer = command.writer
     try:
         with _open(my_args.outfile, my_args.encoding) as f:
-            unicode_csv_writer.write(f, command, my_args.encoding,
+            output_writer.write(f, command, my_args.encoding,
                                      delimiter=my_args.delimiter)
     except HTTPError as err:
         if err.response.status_code == 401:
