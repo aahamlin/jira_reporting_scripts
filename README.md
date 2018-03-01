@@ -10,6 +10,12 @@ Windows: Python 3.6 (tested), 2.7 (not tested)
 
 You may want to view/download the [Quickstart Guide](doc/Quickstart.docx).
 
+## Setup
+
+Initial configuration uses the dummy account name, yourusername.atlassian.net. This is stored in the `defaults.ini`
+file contained within the module itself. Users should create a user preference configuration at `$HOME/.qjira.ini` by
+copying `defaults.ini` to their home directory and modifying the `base_url` value.
+
 **IMPORTANT NOTES**
 
 Installation requires setuptools >= 20.5.
@@ -348,9 +354,13 @@ Basic make commands:
 
 `$ make init`
 
-  * Run the unit tests
+  * Run the unit tests in your current Python environment
 
 `$ make test`
+
+  * Run the unit tests in both python 2.7 and python 3 environments using `virtualenv`
+  
+`$ make test-all`
 
   * Clean the binary and cached output
   
