@@ -348,8 +348,6 @@ Exit the virtualenv, `$ deactivate`
 
 Basic make commands: 
 
-*Run these from inside the virtualenv*
-
   * Initialize the project dependencies
 
 `$ make init`
