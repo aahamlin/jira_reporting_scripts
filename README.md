@@ -277,7 +277,11 @@ optional arguments:
 
   * Uses setuptools for installation. On MacOS, install requires root permission via `sudo`. 
 
-`$ pip install git+https://github.com/andrew-hamlin-sp/jira_reporting_scripts.git`
+`$ pip install git+https://github.com/aahamlin/jira_reporting_scripts.git`
+
+  * Or, install as user (requires updating your $PATH)
+  
+`$ pip install --user git+https://github.com/aahamlin/jira_reporting_scripts.git`
 
 # Command line usage
 
