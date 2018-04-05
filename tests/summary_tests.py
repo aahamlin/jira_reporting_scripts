@@ -15,7 +15,7 @@ class TestSummaryAsCSV(test_util.SPTestCase, test_util.MockJira, unittest.TestCa
 
     def setUp(self):
         self.setup_mock_jira()
-        self.command_under_test = SummaryCommand(base_url='localhost:3000', project=['TEST'], use_csv_formatter=True)
+        self.command_under_test = SummaryCommand(base_url='http://localhost:3000', project=['TEST'], use_csv_formatter=True)
 
     def tearDown(self):
         self.teardown_mock_jira()
@@ -45,7 +45,7 @@ class TestSummaryAsCSV(test_util.SPTestCase, test_util.MockJira, unittest.TestCa
         # summary command adds row for each story completed or in-progress for that sprint
         self.assertDictContainsSubset({'sprint_0_name': 'Chambers Sprint 10'}, data[1])
         # make sure resolve epic link is called properly
-        self.assertDictContainsSubset({'epic_link': '=HYPERLINK("https://localhost:3000/browse/test-1234","epic name")'}, data[1])
+        self.assertDictContainsSubset({'epic_link': '=HYPERLINK("http://localhost:3000/browse/test-1234","epic name")'}, data[1])
 
     def test_doc_links_not_marked_new_without_new_opt(self):
         # modify the dates to mark these as News
@@ -115,7 +115,7 @@ class TestSummaryAsHTML(test_util.SPTestCase, test_util.MockJira, unittest.TestC
 
     def setUp(self):
         self.setup_mock_jira()
-        self.command_under_test = SummaryCommand(base_url='localhost:3000', project=['TEST'])
+        self.command_under_test = SummaryCommand(base_url='http://localhost:3000', project=['TEST'])
 
     def tearDown(self):
         self.teardown_mock_jira()
@@ -143,4 +143,4 @@ class TestSummaryAsHTML(test_util.SPTestCase, test_util.MockJira, unittest.TestC
         # summary command adds row for each story completed or in-progress for that sprint
         self.assertDictContainsSubset({'sprint_0_name': 'Chambers Sprint 10'}, data[1])
         # make sure resolve epic link is called properly
-        self.assertDictContainsSubset({'epic_link': '<a href="https://localhost:3000/browse/test-1234" target="_blank">epic name</a>'}, data[1])
+        self.assertDictContainsSubset({'epic_link': '<a href="http://localhost:3000/browse/test-1234" target="_blank">epic name</a>'}, data[1])

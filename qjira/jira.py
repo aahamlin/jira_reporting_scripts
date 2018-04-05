@@ -22,11 +22,11 @@ CUSTOM_FIELD_MAP = {
     'customfield_10400': 'customer',
 }
 
-ISSUE_ENDPOINT='https://{}/rest/api/2/issue/{}'
+ISSUE_ENDPOINT='{}/rest/api/2/issue/{}'
 
-ISSUE_SEARCH_ENDPOINT='https://{}/rest/api/2/search?{}'
+ISSUE_SEARCH_ENDPOINT='{}/rest/api/2/search?{}'
 
-ISSUE_BROWSE='https://{}/browse/{}'
+ISSUE_BROWSE='{}/browse/{}'
     
 HEADERS = {'content-type': 'application/json'}
 

@@ -12,7 +12,7 @@ from qjira.log import Log
 from . import test_data
 from . import test_util
 
-TEST_BASE_URL = 'localhost:3000'
+TEST_BASE_URL = 'http://localhost:3000'
 
 class TestJiraFunc(test_util.MockJira, unittest.TestCase):
 
@@ -26,7 +26,7 @@ class TestJiraFunc(test_util.MockJira, unittest.TestCase):
     def test_get_project_issues(self):
         """test that all expected fields are urlencoded properly""" 
 
-        expectedUrl = 'https://localhost:3000/rest/api/2/search?fields=-%2Anavigable%2Cproject%2Cissuetype%2Cstatus%2Csummary%2Cassignee%2CfixVersions%2Ccustomfield_10109%2Ccustomfield_10016%2Ccustomfield_10017&jql=issuetype+%3D+Story&maxResults=50&expand=changelog&startAt=0&'
+        expectedUrl = 'http://localhost:3000/rest/api/2/search?fields=-%2Anavigable%2Cproject%2Cissuetype%2Cstatus%2Csummary%2Cassignee%2CfixVersions%2Ccustomfield_10109%2Ccustomfield_10016%2Ccustomfield_10017&jql=issuetype+%3D+Story&maxResults=50&expand=changelog&startAt=0&'
         try:
             next(j.all_issues(TEST_BASE_URL, 'issuetype = Story'))
         except StopIteration:
@@ -36,12 +36,12 @@ class TestJiraFunc(test_util.MockJira, unittest.TestCase):
 
     def test_get_browse_url(self):
         url = j.get_browse_url(TEST_BASE_URL, 'IIQETN-1')
-        self.assertEqual('https://localhost:3000/browse/IIQETN-1', url)
+        self.assertEqual('http://localhost:3000/browse/IIQETN-1', url)
 
     def test_get_issue(self):
         """Test that getting a single issue urlencodes properly"""
         self.json_response = {'key': 123, 'fields': {}, 'changelog': []}
-        expectedUrl = 'https://localhost:3000/rest/api/2/issue/IIQETN-1'
+        expectedUrl = 'http://localhost:3000/rest/api/2/issue/IIQETN-1'
         j.get_issue(TEST_BASE_URL, 'IIQETN-1')
         self.assertUrlPartsEqual(expectedUrl, self.actual_url)
         

@@ -11,7 +11,7 @@ class TestBacklog(test_util.MockJira, unittest.TestCase):
 
     def setUp(self):
         self.setup_mock_jira()
-        self.processor = BacklogCommand(project=['TEST'], base_url='localhost:3000')
+        self.processor = BacklogCommand(project=['TEST'], base_url='http://localhost:3000')
 
     def tearDown(self):
         self.teardown_mock_jira()
