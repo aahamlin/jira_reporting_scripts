@@ -1,10 +1,11 @@
 from operator import itemgetter
 from collections import OrderedDict
 
-from .log import Log
+from ..config import settings
+from ..log import Log
 from .command import BaseCommand
 
-from . import headers
+from .. import headers
 
 def networkdays(start, end):
     return '=NETWORKDAYS("{}","{}")'.format(start, end)
@@ -36,7 +37,8 @@ class CycleTimeCommand(BaseCommand):
 
     @property
     def query(self):
-        return 'issuetype = Story AND status in (Done, Accepted)'
+        return settings['cycletime']['query']
+        #return 'issuetype = Story AND status in (Done, Accepted)'
 
     def pre_process(self, src):
         for x in src:

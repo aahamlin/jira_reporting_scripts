@@ -7,9 +7,10 @@ for example.
 
 from collections import OrderedDict
 
+from ..config import settings
 from .command import PivotCommand
-from .log import Log
-from . import headers
+from ..log import Log
+from .. import headers
 
 class BacklogCommand(PivotCommand):
 
@@ -34,7 +35,9 @@ class BacklogCommand(PivotCommand):
     
     @property
     def query(self):
-        return 'issuetype = Bug AND resolution = Unresolved ORDER BY priority DESC'
+        return settings['backlog']['query']
+        #return 'issuetype = Bug AND resolution = Unresolved ORDER BY priority DESC'
+
     
     @property
     def count_fields(self):

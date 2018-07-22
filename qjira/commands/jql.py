@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
-from .command import BaseCommand
-from . import jira
-from . import headers
+from ..config import settings
+from .command import PivotCommand
+from .. import jira
+from .. import headers
 
-class JQLCommand(BaseCommand):
+class JQLCommand(PivotCommand):
     '''JQL command runs any valid JQL query string.
 
     Given a list of add_field the Jira query string be appended with additional non-default fields to retrieve.
@@ -14,11 +15,9 @@ class JQLCommand(BaseCommand):
     into account. Refer to qjira/jira.py for the set of mappings.
     '''
 
-    DEFAULT_COLUMN_NAMES = ['project_key', 'issue_key', 'issuetype_name', 'summary',
-                            'status_name', 'assignee_name', 'sprint_0_name',
-                            'fixVersions_0_name']
+    DEFAULT_COLUMN_NAMES = settings['jql']['default_cols'].split(',')
     
-    def __init__(self, jql=None, add_field=None, add_column=None, *args, **kwargs):
+    def __init__(self, jql=None, add_field=None, add_column=None, pivot_field=None, *args, **kwargs):
         super(JQLCommand, self).__init__(*args, **kwargs)
 
         if not jql:
@@ -27,7 +26,16 @@ class JQLCommand(BaseCommand):
         self._jql = jql
         self._add_fields = add_field
         self._add_columns = add_column
+        self.pivot_field = pivot_field
 
+    @property
+    def pivot_field(self):
+        return self._pivot_field
+
+    @pivot_field.setter
+    def pivot_field(self, f):
+        self._pivot_field = f
+            
     @property
     def header(self):
         '''JQL command returns all fields.

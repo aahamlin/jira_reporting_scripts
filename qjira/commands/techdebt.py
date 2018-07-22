@@ -1,12 +1,13 @@
 '''
-Analyze tech debt ratios Story vs Bug points.
+Analyze progress of tech debt ratios completed. Story vs Bug points.
 '''
 from functools import partial, cmp_to_key, reduce as reduce_
 from collections import OrderedDict
 
+from ..config import settings
 from .command import BaseCommand
-from .log import Log
-from . import headers
+from ..log import Log
+from .. import headers
 
 DEFAULT_POINTS = 0.0
 TOTAL_COL = 'Grand Total'
@@ -22,7 +23,8 @@ class TechDebtCommand(BaseCommand):
 
     @property
     def query(self):
-        return 'issuetype in (Story, Bug) AND status in (Accepted, Closed, Done)'
+        return settings['techdebt']['query']
+        #return 'issuetype in (Story, Bug) AND status in (Accepted, Closed, Done)'
 
     def _format_points(self, f):
         return '{:.0f}'.format(f)

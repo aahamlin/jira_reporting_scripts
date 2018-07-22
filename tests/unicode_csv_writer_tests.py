@@ -13,7 +13,7 @@ except ImportError:
 
 import qjira.unicode_csv_writer as csv_writer
 
-from qjira.command import BaseCommand
+from qjira.commands import BaseCommand
 from . import test_data
 from . import test_util
 

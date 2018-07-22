@@ -1,7 +1,7 @@
-from . import test_context
+#from . import test_context
 import unittest
 
-from qjira.jql import JQLCommand
+from qjira.commands import JQLCommand
 
 from . import test_data
 from . import test_util

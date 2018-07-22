@@ -1,9 +1,9 @@
-from . import test_context
+#from . import test_context
 
 import unittest
 import datetime
 
-from qjira.velocity import VelocityCommand
+from qjira.commands import VelocityCommand
 
 from . import test_data
 from . import test_util

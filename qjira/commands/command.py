@@ -4,10 +4,10 @@ import copy
 import re
 from functools import partial
 
-from . import jira
-from . import dataprocessor as dp
-from .log import Log
-from . import unicode_csv_writer
+from .. import jira
+from .. import dataprocessor as dp
+from ..log import Log
+from .. import unicode_csv_writer
 
 def query_builder(name, items):
     return '{0} in ({1})'.format(name, ','.join(items))

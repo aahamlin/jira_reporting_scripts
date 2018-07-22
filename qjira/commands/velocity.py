@@ -7,9 +7,10 @@ from functools import reduce as reduce_
 from collections import OrderedDict
 import datetime
 
+from ..config import settings
 from .command import PivotCommand
-from .log import Log
-from . import headers
+from ..log import Log
+from .. import headers
 
 DEFAULT_POINTS = 0.0
 
@@ -73,9 +74,9 @@ class VelocityCommand(PivotCommand):
     @property
     def query(self):
         if self._include_bugs:
-            return 'issuetype in (Story, Bug)'
+            return settings['velocity']['query_bug']
         else:
-            return 'issuetype = Story'
+            return settings['velocity']['query']
 
     def post_process(self, rows):
         '''data processor wrapper to calculate points as planned, carried, completed'''

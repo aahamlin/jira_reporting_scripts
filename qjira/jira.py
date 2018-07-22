@@ -9,44 +9,23 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
+from .config import settings
 from .log import Log
 from .dataprocessor import extract_sprint, create_history
 
-CUSTOM_FIELD_MAP = {
-    'customfield_10016': 'sprint',
-    'customfield_10017': 'epic_issue_key',
-    'customfield_10109': 'story_points',
-    'customfield_11101': 'design_doc_link',
-    'customfield_14300': 'testplan_doc_link',
-    'customfield_10112': 'severity',
-    'customfield_10400': 'customer',
-}
+CUSTOM_FIELD_MAP = dict(settings['custom_fields'].items())
 
-ISSUE_ENDPOINT='https://{}/rest/api/2/issue/{}'
+ISSUE_ENDPOINT='{}/rest/api/2/issue/{}'
 
-ISSUE_SEARCH_ENDPOINT='https://{}/rest/api/2/search?{}'
+ISSUE_SEARCH_ENDPOINT='{}/rest/api/2/search?{}'
 
-ISSUE_BROWSE='https://{}/browse/{}'
+ISSUE_BROWSE='{}/browse/{}'
     
 HEADERS = {'content-type': 'application/json'}
 
-DEFAULT_FIELDS = [
-    '-*navigable',
-    'project',
-    'issuetype',
-    'status',
-    'summary',
-    'assignee',
-    'fixVersions',
-    'customfield_10016',
-    'customfield_10017',
-    'customfield_10109'
-]
+DEFAULT_FIELDS = settings['jira']['default_fields'].split(',')
 
-DEFAULT_EXPANDS = [
-    #'versionedRepresentations',
-    'changelog'
-]
+DEFAULT_EXPANDS = settings['jira']['default_expands'].split(',')
 
 def _get_json(url, username=None, password=None, headers=HEADERS):
     r = requests.get(url, auth=(username, password), headers=headers)
@@ -55,9 +34,11 @@ def _get_json(url, username=None, password=None, headers=HEADERS):
     return r.json()
 
 def _as_data(issue, reverse_sprints=False):
-    if Log.isVerboseEnabled():
+    if Log.isDebugEnabled():
         Log.verbose('enter jira._as_data: issue, reverse_sprints={0}'.format(reverse_sprints))
-        Log.verbose('issue={0}'.format(json.dumps(issue, sort_keys=True, indent=4, separators=(',', ': '))))
+    if Log.isVerboseEnabled():
+        Log.verbose('jira json format: {0}'.format(
+            json.dumps(issue, sort_keys=True, indent=4, separators=(',', ': '))))
         
     data = {
         'issue_key':issue['key']
@@ -85,7 +66,11 @@ def _as_data(issue, reverse_sprints=False):
         data.update(change_history)
 
     if Log.isVerboseEnabled():
-        Log.verbose('exit jira._as_data: {0}'.format(data))
+        Log.verbose('qjira json format: {0}'.format(
+            json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))))
+    if Log.isDebugEnabled():
+        Log.verbose('exit jira._as_data')
+
     return data
 
 def default_fields():
@@ -107,6 +92,7 @@ def all_issues(baseUrl, jql,
                username=None,
                password=None,
                progress_cb=None,
+               continue_cb=None,
                reverse_sprints=False,
                fields=DEFAULT_FIELDS,
                expands=DEFAULT_EXPANDS):
@@ -141,6 +127,8 @@ def all_issues(baseUrl, jql,
         startAt += count
         for issue in issues:
             yield _as_data(issue, reverse_sprints=reverse_sprints)
+            if continue_cb and not continue_cb():
+                return
 
     if progress_cb:
         progress_cb(startAt, total)

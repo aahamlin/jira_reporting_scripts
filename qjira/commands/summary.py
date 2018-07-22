@@ -7,11 +7,12 @@ from collections import OrderedDict
 
 import datetime
 
-from .log import Log
+from ..config import settings
+from ..log import Log
 from .command import BaseCommand
-from . import jira
-from . import summary_html_writer
-from . import headers
+from .. import jira
+from .. import summary_html_writer
+from .. import headers
 
 # Sprints w/o dates and Issues without sprints
 SORT_DEFAULT_YEAR = datetime.date(datetime.MINYEAR, 1, 1)
@@ -65,8 +66,10 @@ class SummaryCommand(BaseCommand):
         
     @property
     def query(self):
-        return 'issuetype = Story'
-
+        return settings['summary']['query']
+        #return 'issuetype = Story'
+        #return 'issuetype in standardIssueTypes() AND issuetype not in (Bug, Epic, Task, subTaskIssueTypes())'
+        
     @property
     def writer(self):
         if self._use_csv_formatter:

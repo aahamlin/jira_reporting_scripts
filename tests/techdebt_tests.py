@@ -1,8 +1,8 @@
-from . import test_context
+#from . import test_context
 
 import unittest
 
-from qjira.techdebt import TechDebtCommand
+from qjira.commands import TechDebtCommand
 
 from . import test_data
 from . import test_util
