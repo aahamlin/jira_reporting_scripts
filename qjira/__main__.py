@@ -166,10 +166,6 @@ def create_parser(settings):
         action='store_true',
         help='Include future sprints in velocity calculation')
 
-    parser_velocity.add_argument('--raw', '-R',
-        action='store_true',
-        help='Output all rows instead of summary by sprint name.')
-
     parser_velocity.add_argument('--filter-by-date',
         type=date_string,
         metavar='START',

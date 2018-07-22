@@ -3,12 +3,15 @@ import abc
 import copy
 import re
 from functools import partial
+from collections import OrderedDict
 
 from .. import jira
 from .. import dataprocessor as dp
-from ..log import Log
 from .. import unicode_csv_writer
 
+from ..log import Log
+from ..config import settings
+        
 def query_builder(name, items):
     return '{0} in ({1})'.format(name, ','.join(items))
 
@@ -16,13 +19,15 @@ class BaseCommand:
 
     __metaclass__ = abc.ABCMeta
     
-    def __init__(self, base_url=None, project=[],
-                 fixversion=[], all_fields=False,
+    def __init__(self, name, pivot_field=None,
+                 base_url=None, project=[],
+                 fixversion=[], all_fields=False, 
                  *args, **kwargs):
         '''Initialize a command.
         
         Required Arguments:
 
+        name - name of command and config section
         project - list of JIRA Project keys
         base_url -- JIRA Cloud instance, e.g. your-company.atlassian.net
 
@@ -33,11 +38,13 @@ class BaseCommand:
         if not base_url:
             raise TypeError('Missing keyword "base_url"')
 
+        self._name = name
         self._projects = project
         self._base_url = base_url
         self._fixversions = fixversion
         self._all_fields = all_fields
-                
+        self._pivot_field = pivot_field
+        
         self.kwargs = kwargs
         
     def _configure_http_request(self):
@@ -51,13 +58,14 @@ class BaseCommand:
     def show_all_fields(self):
         return self._all_fields
 
-    @abc.abstractproperty
+    @property
     def header(self):
-        '''Return dict of CSV column keys and user-friendly names.
-
-        an OrderedDict.
         '''
-        raise NotImplementedError()
+        Return OrderedDict of CSV column keys and user-friendly names.
+        '''
+        header = OrderedDict.fromkeys(settings[self._name]['headers'].split(','))
+        header.update({k:v for k,v in settings['headers'].items() if k in header.keys()})
+        return header
     
     @property
     def header_keys(self):
@@ -67,10 +75,11 @@ class BaseCommand:
         '''
         return list(self.header.keys())
 
-    @abc.abstractproperty
+    @property
     def query(self):
         '''Return the JQL query for this command.'''
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return settings[self._name]['query']
 
     @property
     def writer(self):
@@ -95,6 +104,11 @@ class BaseCommand:
     @property
     def datetime_fields(self):
         return ['lastViewed', 'created', 'updated']
+
+    @property
+    def pivot_field(self):
+        return self._pivot_field
+
     
     def _create_query_string(self):
         query = []
@@ -134,10 +148,28 @@ class BaseCommand:
         return req
 
     def pre_process(self, generate_data):
-        '''Override to construct a new data generator from the source generator'''
+        '''Return a generator from the source generator. Include pivot
+        on a field to generate new rows from the list.
+        '''
         Log.debug('pre_process: {0}'.format(generate_data))
-        return generate_data
 
+        pivot_on = self.pivot_field
+        for x in generate_data:
+            if pivot_on and pivot_on in x and x[pivot_on]:
+                pivots = copy.copy(x[pivot_on])
+                del x[pivot_on]
+                Log.debug('Pivot on field {0}, {1} item(s)'.format(pivot_on, len(pivots)))
+                #print('> pivot on {0} sprints'.format(len(sprints)))
+                '''Create new json object for each sprint'''
+                for pivot in pivots:
+                    #print('> next sprint: {0}'.format(sprint['name']))
+                    y = {pivot_on: pivot}
+                    y.update(x.copy())
+                    yield y
+            else:
+                yield x
+
+    
     def post_process(self, generate_rows):
         '''Override to construct a new row generator from the source generator'''
         Log.debug('post_process: {0}'.format(generate_rows))
@@ -152,29 +184,3 @@ class BaseCommand:
                          for x in self.pre_process(http_req))
         Log.debug('execute: {0}'.format(generate_rows))
         return self.post_process(generate_rows)
-
-class PivotCommand(BaseCommand):
-
-    @abc.abstractproperty
-    def pivot_field(self):
-        pass
-        
-    def pre_process(self, generate_data):
-        '''Return a generator from the source generator including pivot on sprint names
-           sprint is no longer a list within a row but each sprint signifies a row
-        '''
-        pivot_on = self.pivot_field
-        for x in generate_data:
-            if pivot_on in x and x[pivot_on]:
-                pivots = copy.copy(x[pivot_on])
-                del x[pivot_on]
-                Log.debug('Pivot on field {0}, {1} item(s)'.format(pivot_on, len(pivots)))
-                #print('> pivot on {0} sprints'.format(len(sprints)))
-                '''Create new json object for each sprint'''
-                for pivot in pivots:
-                    #print('> next sprint: {0}'.format(sprint['name']))
-                    y = {pivot_on: pivot}
-                    y.update(x.copy())
-                    yield y
-            else:
-                yield x

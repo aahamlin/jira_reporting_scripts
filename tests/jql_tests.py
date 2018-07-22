@@ -1,4 +1,4 @@
-#from . import test_context
+
 import unittest
 
 from qjira.commands import JQLCommand

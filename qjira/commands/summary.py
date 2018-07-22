@@ -3,7 +3,6 @@ Summarize the backlog
 '''
 from operator import itemgetter
 from functools import partial
-from collections import OrderedDict
 
 import datetime
 
@@ -12,7 +11,6 @@ from ..log import Log
 from .command import BaseCommand
 from .. import jira
 from .. import summary_html_writer
-from .. import headers
 
 # Sprints w/o dates and Issues without sprints
 SORT_DEFAULT_YEAR = datetime.date(datetime.MINYEAR, 1, 1)
@@ -39,37 +37,19 @@ def sprint_header(sprint_name, sprint_startDate, sprint_endDate):
 class SummaryCommand(BaseCommand):
 
     def __init__(self, mark_if_new=False, use_csv_formatter=False, *args, **kwargs):
-        super(SummaryCommand, self).__init__(*args, **kwargs)
+        super(SummaryCommand, self).__init__('summary', *args, **kwargs)
+        
         self._mark_if_new = mark_if_new
         self._use_csv_formatter = use_csv_formatter
 
         self.BLANK_CELL = '=T("")' if use_csv_formatter else '&nbsp;'
         self._hyperlink = self._hyperlink_excel if use_csv_formatter else self._hyperlink_html
-
-        self.COLUMNS = OrderedDict([headers.get_column('issue_link'),
-                                    headers.get_column('summary'),
-                                    headers.get_column('assignee_displayName'),
-                                    headers.get_column('design_doc_link'),
-                                    headers.get_column('testplan_doc_link'),
-                                    headers.get_column('story_points'),
-                                    headers.get_column('status_name'),
-                                    headers.get_column('epic_link')])        
     
     def _configure_http_request(self):
         return partial(
             super(SummaryCommand, self)._configure_http_request(),
             reverse_sprints=True)
 
-    @property
-    def header(self):
-        return self.COLUMNS
-        
-    @property
-    def query(self):
-        return settings['summary']['query']
-        #return 'issuetype = Story'
-        #return 'issuetype in standardIssueTypes() AND issuetype not in (Bug, Epic, Task, subTaskIssueTypes())'
-        
     @property
     def writer(self):
         if self._use_csv_formatter:

@@ -1,5 +1,3 @@
-from . import test_context
-
 import sys
 import io
 import unittest

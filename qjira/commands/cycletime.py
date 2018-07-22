@@ -1,11 +1,8 @@
 from operator import itemgetter
-from collections import OrderedDict
 
 from ..config import settings
 from ..log import Log
 from .command import BaseCommand
-
-from .. import headers
 
 def networkdays(start, end):
     return '=NETWORKDAYS("{}","{}")'.format(start, end)
@@ -24,21 +21,9 @@ class CycleTimeCommand(BaseCommand):
    This does not record separate values for bugs being dev
    complete Resolved and being test complete Closed.
     '''
-    @property
-    def header(self):
-         return OrderedDict([headers.get_column('project_key'),
-                             headers.get_column('fixVersions_0_name'),
-                             headers.get_column('issuetype_name'),
-                             headers.get_column('issue_key'),
-                             headers.get_column('story_points'),
-                             headers.get_column('status_InProgress'),
-                             headers.get_column('status_Done'),
-                             headers.get_column('count_days')])
 
-    @property
-    def query(self):
-        return settings['cycletime']['query']
-        #return 'issuetype = Story AND status in (Done, Accepted)'
+    def __init__(self, *args, **kwargs):
+        super(CycleTimeCommand, self).__init__('cycletime', *args, **kwargs)
 
     def pre_process(self, src):
         for x in src:

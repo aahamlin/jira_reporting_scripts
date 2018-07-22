@@ -5,39 +5,14 @@ between future unreleased versions and dev_backlog,
 for example.
 """
 
-from collections import OrderedDict
-
 from ..config import settings
-from .command import PivotCommand
+from .command import BaseCommand
 from ..log import Log
-from .. import headers
 
-class BacklogCommand(PivotCommand):
+class BacklogCommand(BaseCommand):
 
-    @property
-    def pivot_field(self):
-        return 'fixVersions'
-
-    @property
-    def header(self):
-        return OrderedDict([headers.get_column('project_key'),
-                            headers.get_column('fixVersions_name'),
-                            headers.get_column('issuetype_name'),
-                            headers.get_column('issue_key'),
-                            headers.get_column('summary'),
-                            headers.get_column('priority_name'),
-                            headers.get_column('status_name'),
-                            headers.get_column('assignee_displayName'),
-                            headers.get_column('created'),
-                            headers.get_column('updated'),
-                            headers.get_column('severity_value'),
-                            headers.get_column('customer')])
-    
-    @property
-    def query(self):
-        return settings['backlog']['query']
-        #return 'issuetype = Bug AND resolution = Unresolved ORDER BY priority DESC'
-
+    def __init__(self, *args, **kwargs):
+        super(BacklogCommand, self).__init__('backlog', pivot_field='fixVersions', *args, **kwargs)
     
     @property
     def count_fields(self):

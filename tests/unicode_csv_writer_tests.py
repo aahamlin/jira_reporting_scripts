@@ -21,6 +21,9 @@ PY3 = sys.version_info > (3,)
 
 class TestCommand(BaseCommand):
 
+    def __init__(self, *args, **kwargs):
+        super(TestCommand, self).__init__('test', *args, **kwargs)
+    
     @property
     def header(self):
         return OrderedDict([('summary', 'Summary')])

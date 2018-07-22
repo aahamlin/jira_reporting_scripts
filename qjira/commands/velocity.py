@@ -4,17 +4,16 @@ carried over for every sprint associated with an issue.
 '''
 from operator import itemgetter
 from functools import reduce as reduce_
-from collections import OrderedDict
+
 import datetime
 
 from ..config import settings
-from .command import PivotCommand
+from .command import BaseCommand
 from ..log import Log
-from .. import headers
 
 DEFAULT_POINTS = 0.0
 
-class VelocityCommand(PivotCommand):
+class VelocityCommand(BaseCommand):
     '''Analyze data for velocity metrics.
 
     Issues (story or bug) that have not been assigned at 
@@ -33,54 +32,23 @@ class VelocityCommand(PivotCommand):
     completed points - finished in this sprint (status = Closed, Done)
     '''
 
-    def __init__(self, include_bugs=False, forecast=False, raw=False, filter_by_date=None, *args, **kwargs):
-        super(VelocityCommand, self).__init__(*args, **kwargs)
+    def __init__(self, include_bugs=False, forecast=False, filter_by_date=None, *args, **kwargs):
+        super(VelocityCommand, self).__init__('velocity', pivot_field='sprint', *args, **kwargs)
         self._include_bugs = include_bugs
         self._forecast = forecast
-        self._raw = raw
         self._filter_by_date = filter_by_date
         self._target_sprint_ids = set()
-
-        if raw:
-            self._header = OrderedDict([headers.get_column('project_key'),
-                                        headers.get_column('fixVersions_0_name'),
-                                        headers.get_column('issuetype_name'),
-                                        headers.get_column('issue_key'),
-                                        headers.get_column('sprint_name'),
-                                        headers.get_column('sprint_startDate'),
-                                        headers.get_column('sprint_endDate'),
-                                        headers.get_column('story_points'),
-                                        headers.get_column('planned_points'),
-                                        headers.get_column('carried_points'),
-                                        headers.get_column('completed_points')])
-        else:
-            self._header = OrderedDict([headers.get_column('project_key'),
-                                        headers.get_column('sprint_name'),
-                                        headers.get_column('sprint_startDate'),
-                                        headers.get_column('sprint_endDate'),
-                                        headers.get_column('story_points'),
-                                        headers.get_column('planned_points'),
-                                        headers.get_column('carried_points'),
-                                        headers.get_column('completed_points')])
-            
-    @property
-    def pivot_field(self):
-        return 'sprint'
-        
-    @property
-    def header(self):
-        return self._header
     
     @property
     def query(self):
         if self._include_bugs:
             return settings['velocity']['query_bug']
         else:
-            return settings['velocity']['query']
+            return super(VelocityCommand, self).query
 
     def post_process(self, rows):
         '''data processor wrapper to calculate points as planned, carried, completed'''
-        results = self._raw_process(rows) if self._raw else self._reduce_process(rows)
+        results = self._reduce_process(rows)
         sorted_sprints = sorted(results, key=itemgetter('project_key'))
         sorted_sprints = sorted(sorted_sprints, key=itemgetter('sprint_name'))
         sorted_sprints = sorted(sorted_sprints, key=lambda x: x.get('sprint_startDate') or datetime.date.max)
@@ -124,7 +92,8 @@ class VelocityCommand(PivotCommand):
                 r['completed_points'])
             
     def _raw_process(self, rows):
-        '''Do bulk processing of individual stories, suitable for excel.
+        '''
+        Do bulk processing of individual stories, suitable for excel.
 
         Stories with no defined sprint (no start or end date) are skipped. They do not count against velocity.
 
