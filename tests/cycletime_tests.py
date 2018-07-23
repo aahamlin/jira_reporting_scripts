@@ -3,7 +3,7 @@ from . import test_context
 import datetime
 import unittest
 
-from qjira.cycletime import CycleTimeCommand
+from qjira.commands import CycleTimeCommand
 
 from . import test_data
 from . import test_util

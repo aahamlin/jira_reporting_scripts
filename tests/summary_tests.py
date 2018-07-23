@@ -1,4 +1,4 @@
-from . import test_context
+#from . import test_context
 
 import unittest
 import datetime
@@ -6,7 +6,7 @@ import datetime
 import qjira.unicode_csv_writer as csv_writer_cls
 import qjira.summary_html_writer as html_writer_cls
 
-from qjira.summary import SummaryCommand
+from qjira.commands import SummaryCommand
 
 from . import test_data
 from . import test_util

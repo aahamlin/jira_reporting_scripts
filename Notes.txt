@@ -8,6 +8,7 @@ Goals
 
 Todos:
  - date range queries/filters in addition to just fixVersion filters
+ - configure standard commands for various backend Jira servers
 
 Appendix/Reference
 

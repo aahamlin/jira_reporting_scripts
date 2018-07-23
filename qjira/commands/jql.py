@@ -1,8 +1,9 @@
 from collections import OrderedDict
 
+from ..config import settings
 from .command import BaseCommand
-from . import jira
-from . import headers
+from .. import jira
+
 
 class JQLCommand(BaseCommand):
     '''JQL command runs any valid JQL query string.
@@ -13,30 +14,27 @@ class JQLCommand(BaseCommand):
     TODO: Mapping from Jira fields to column names (such as 'customfield_10112' to 'severity') is not taken
     into account. Refer to qjira/jira.py for the set of mappings.
     '''
-
-    DEFAULT_COLUMN_NAMES = ['project_key', 'issue_key', 'issuetype_name', 'summary',
-                            'status_name', 'assignee_name', 'sprint_0_name',
-                            'fixVersions_0_name']
     
     def __init__(self, jql=None, add_field=None, add_column=None, *args, **kwargs):
-        super(JQLCommand, self).__init__(*args, **kwargs)
+        super(JQLCommand, self).__init__('jql', *args, **kwargs)
 
         if not jql:
             raise TypeError('Missing keyword "jql"')
 
         self._jql = jql
-        self._add_fields = add_field
-        self._add_columns = add_column
+        self._add_fields = add_field or []
+        self._add_columns = add_column or []
 
     @property
     def header(self):
         '''JQL command returns all fields.
         '''
-        columns =  JQLCommand.DEFAULT_COLUMN_NAMES
-        if self._add_columns and len(self._add_columns)>0:
-            columns += self._add_columns
-            
-        return OrderedDict([headers.get_column(n) for n in columns])
+        columns =  super(JQLCommand, self).header
+
+        for c in self._add_columns:
+            columns[c] = c
+
+        return columns
     
     @property
     def query(self):
@@ -44,6 +42,7 @@ class JQLCommand(BaseCommand):
         return self._jql
 
     def retrieve_fields(self, fields):
+        
         if self._add_fields and len(self._add_fields)>0:
             return fields + self._add_fields
         else:

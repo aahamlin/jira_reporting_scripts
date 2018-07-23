@@ -1,8 +1,8 @@
-from . import test_context
+#from . import test_context
 
 import unittest
 
-from qjira.backlog import BacklogCommand
+from qjira.commands import BacklogCommand
 
 from . import test_data
 from . import test_util

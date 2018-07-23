@@ -1,6 +1,10 @@
 .DS_Store
 .Python
 .tern-port
+.eggs/
+qjira.egg-info/
+_py27/
+_py3/
 bin/
 include/
 keys/
