@@ -13,7 +13,8 @@ setup(name='qjira',
       ],
       entry_points={
           'console_scripts': [
-              'qjira = qjira.__main__:main'
+              'qjira = qjira.__main__:main',
+              'qjira_dump = qjira.__dump__:main'
           ]
       },
       test_suite='tests.suite',
