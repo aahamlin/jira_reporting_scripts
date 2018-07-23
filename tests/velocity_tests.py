@@ -52,17 +52,17 @@ class TestVelocity(test_util.MockJira, unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictContainsSubset({
             'sprint_name':'Chambers Sprint 9',
-            'planned_points': 6.0,
-            'carried_points': 0.0,
+            'planned_effort': 6.0,
+            'carried_effort': 0.0,
             'story_points': 6.0,
-            'completed_points': 3.0
+            'completed_effort': 3.0
         }, data[0])
         self.assertDictContainsSubset({
             'sprint_name': 'Chambers Sprint 10',
-            'planned_points': 0.0,
-            'carried_points': 3.0,
+            'planned_effort': 0.0,
+            'carried_effort': 3.0,
             'story_points': 3.0,
-            'completed_points': 3.0
+            'completed_effort': 3.0
         }, data[1])
 
     def test_process_bugs_in_stories_only(self):
@@ -83,10 +83,10 @@ class TestVelocity(test_util.MockJira, unittest.TestCase):
         self.assertEqual(len(data), 1)
         self.assertDictContainsSubset({
             'sprint_name':'Chambers Sprint 9',
-            'planned_points': 3.0,
-            'carried_points': 0.0,
+            'planned_effort': 3.0,
+            'carried_effort': 0.0,
             'story_points': 3.0,
-            'completed_points': 3.0
+            'completed_effort': 3.0
         }, data[0])
 
     def test_process_bugs_in_filtered_range_min(self):
@@ -146,7 +146,7 @@ class TestVelocityWithBugs(test_util.MockJira, unittest.TestCase):
         self.assertEqual('issuetype in (Story, Bug)', self.command_under_test.query)
 
     def test_process_include_bugs(self):
-        '''Bugs will have story_points calculated successfully'''
+        '''Bugs will have effort_value calculated successfully'''
         self.json_response = {
             'total': 1,
             'issues': [test_data.simpleBug()]
@@ -155,9 +155,9 @@ class TestVelocityWithBugs(test_util.MockJira, unittest.TestCase):
         data = list(self.command_under_test.execute())
         
         self.assertEqual(len(data), 1)
-        self.assertDictContainsSubset({'planned_points': 3.0,
-                                       'carried_points': 0.0,
-                                       'completed_points': 3.0},
+        self.assertDictContainsSubset({'planned_effort': 3.0,
+                                       'carried_effort': 0.0,
+                                       'completed_effort': 3.0},
                                       data[0])
 
 class TestVelocityWithForecast(test_util.MockJira, unittest.TestCase):
@@ -186,7 +186,7 @@ class TestVelocityWithForecast(test_util.MockJira, unittest.TestCase):
         data = list(self.command_under_test.execute())
         self.assertEqual(len(data), 1)
         self.assertDictContainsSubset({
-            'planned_points': 5.0,
-            'carried_points': 0.0,
-            'completed_points': 0.0
+            'planned_effort': 5.0,
+            'carried_effort': 0.0,
+            'completed_effort': 0.0
         }, data[0])

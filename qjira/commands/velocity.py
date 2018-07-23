@@ -38,6 +38,8 @@ class VelocityCommand(BaseCommand):
         self._forecast = forecast
         self._filter_by_date = filter_by_date
         self._target_sprint_ids = set()
+        self._sprint_id_issuetypes = settings['velocity']['sprint_id_issuetypes'].split(',')
+        self._effort_field = settings['velocity']['effort_field']
     
     @property
     def query(self):
@@ -68,17 +70,17 @@ class VelocityCommand(BaseCommand):
             Log.debug('Updating velocity in sprint %d'.format(sprint_id))
             if not sprint_id in results:
                 results[sprint_id] = {k:v for k, v in s.items() if k in self.header_keys}
-                current_points = (0, 0, 0, 0)
+                current_effort = (0, 0, 0, 0)
             else:
-                current_points = self._get_points(results[sprint_id])
-            story_points = self._get_points(s)
-            total_points = tuple(map(sum, zip(current_points, story_points)))
+                current_effort = self._get_points(results[sprint_id])
+            effort_value = self._get_points(s)
+            total_effort = tuple(map(sum, zip(current_effort, effort_value)))
                 
             results[sprint_id].update({
-                'planned_points': total_points[0],
-                'carried_points': total_points[1],
-                'story_points': total_points[2],
-                'completed_points': total_points[3]
+                'planned_effort': total_effort[0],
+                'carried_effort': total_effort[1],
+                self._effort_field: total_effort[2],
+                'completed_effort': total_effort[3]
             })
 
         return results.values()
@@ -86,10 +88,10 @@ class VelocityCommand(BaseCommand):
     def _get_points(self, r):
         '''return point fields from row `r`'''
         #return tuple([v or 0 for k,v in r.items() if k in ['planned_points','carried_points','story_points','completed_points']])
-        return (r['planned_points'],
-                r['carried_points'],
-                r.get('story_points', 0),
-                r['completed_points'])
+        return (r['planned_effort'],
+                r['carried_effort'],
+                r.get(self._effort_field, 0),
+                r['completed_effort'])
             
     def _raw_process(self, rows):
         '''
@@ -115,7 +117,7 @@ class VelocityCommand(BaseCommand):
             sprint_id = row['sprint_id']
             if self._filter_by_date and self._filter_by_date <= row.get('sprint_startDate', datetime.date.max):
                 self._target_sprint_ids.add(sprint_id)
-            elif row['issuetype_name'] == 'Story':
+            elif row['issuetype_name'] in self._sprint_id_issuetypes:
                 self._target_sprint_ids.add(sprint_id)
             
             if row['issue_key'] is not last_issue_seen:
@@ -123,14 +125,14 @@ class VelocityCommand(BaseCommand):
                 counter = 0
             else:
                 counter += 1
-            point_value = row.get('story_points', DEFAULT_POINTS)
-            planned_points = point_value if counter == 0 else DEFAULT_POINTS
-            carried_points = point_value if counter >= 1 else DEFAULT_POINTS
-            completed_points = point_value if self._isComplete(row) else DEFAULT_POINTS
+            effort_value = row.get(self._effort_field, DEFAULT_POINTS)
+            planned_effort = effort_value if counter == 0 else DEFAULT_POINTS
+            carried_effort = effort_value if counter >= 1 else DEFAULT_POINTS
+            completed_effort = effort_value if self._isComplete(row) else DEFAULT_POINTS
             update = {
-                'planned_points': planned_points,
-                'carried_points': carried_points,
-                'completed_points': completed_points
+                'planned_effort': planned_effort,
+                'carried_effort': carried_effort,
+                'completed_effort': completed_effort
             }
             row.update(update)
             if Log.isDebugEnabled():

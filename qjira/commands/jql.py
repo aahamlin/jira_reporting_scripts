@@ -15,15 +15,15 @@ class JQLCommand(BaseCommand):
     into account. Refer to qjira/jira.py for the set of mappings.
     '''
     
-    def __init__(self, jql=None, add_field=[], add_column=[], *args, **kwargs):
+    def __init__(self, jql=None, add_field=None, add_column=None, *args, **kwargs):
         super(JQLCommand, self).__init__('jql', *args, **kwargs)
 
         if not jql:
             raise TypeError('Missing keyword "jql"')
 
         self._jql = jql
-        self._add_fields = add_field
-        self._add_columns = add_column
+        self._add_fields = add_field or []
+        self._add_columns = add_column or []
 
     @property
     def header(self):

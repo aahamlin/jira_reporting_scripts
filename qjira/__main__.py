@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 from dateutil import parser as date_parser
 
 from .config import settings
-from .log import Log
+from . import Log
 from . import credential_store as creds
 
 from .commands import VelocityCommand
@@ -60,6 +60,7 @@ def date_string(string):
     except ValueError as ve:
         raise argparse.ArgumentTypeError(ve)
     return value.date()
+
 
 def create_parser(settings):
 
