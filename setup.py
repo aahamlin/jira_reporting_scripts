@@ -5,7 +5,7 @@ setup(name='qjira',
       description='Query JIRA Cloud REST API',
       author='Andrew Hamlin',
       author_email='andrew.hamlin@sailpoint.com',
-      packages=find_packages(include=['qjira'], exclude=['tests']),
+      packages=find_packages(),
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 2',
@@ -17,7 +17,7 @@ setup(name='qjira',
               'qjira_dump = qjira.__dump__:main'
           ]
       },
-      test_suite='tests.suite',
+      test_suite='qjira.tests.suite',
       install_requires=[
           'requests',
           'python-dateutil',
