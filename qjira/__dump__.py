@@ -16,10 +16,12 @@ from .encoder import _encode
 from .commands import JQLCommand
 
 def dump_command(command, encoding):
-    fieldnames = lambda row: [_encode(encoding, s) for s in command.expand_header(row)]
+    headers = dict(settings['headers'].items())
+    Log.debug(headers)
     issue = next(command.execute())
-    for k,v in issue.items():
-        six.print_(fieldnames(k), "\t", six.text_type(v))
+    Log.debug('Retrieved {}'.format(issue))
+    for k in sorted(issue):
+        print('{} ({}):\t{}'.format(k, headers.get(k.lower()), issue[k]))
 
 def create_parser(settings):
 
@@ -55,6 +57,11 @@ def create_parser(settings):
         default='ASCII',
         help='Specify an output encoding. In Python 2.x, only default ASCII is supported.')
 
+    parser.add_argument('-A', '--all-fields',
+        action='store_true',
+        help='Extract all "navigable" fields in Jira, [fields=*navigable]')
+
+    
     parser.add_argument('--add-field', '-f',
         action='append',
         metavar='NAME',

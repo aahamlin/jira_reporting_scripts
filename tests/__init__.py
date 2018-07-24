@@ -15,7 +15,6 @@ from . import backlog_tests
 from . import jql_tests
 
 from . import main_tests
-from . import dump_tests
 
 def suite():
     suite = unittest.TestSuite()
@@ -29,7 +28,6 @@ def suite():
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(backlog_tests))
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(jql_tests))
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(main_tests))
-    suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(dump_tests))
     
     return suite
     
