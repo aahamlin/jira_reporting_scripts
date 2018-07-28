@@ -2,6 +2,8 @@
 # Uses python virtualenv, see also:
 # http://docs.python-guide.org/en/latest/dev/virtualenvs/
 
+MODULES = qjira
+
 all:
 	@echo "Run from virtualenv"
 	@echo "$$ source bin/activate"
@@ -17,17 +19,18 @@ _py3:
 	virtualenv --python=python3 _py3
 	cd _py3 && ln -s ../Makefile ../setup.py ../qjira ../tests .
 
-test-all: _py27 _py3
-	pushd _py27 && source bin/activate && $(MAKE) test && deactivate && popd
-	pushd _py3 && source bin/activate && $(MAKE) test && deactivate && popd
-
 init: 
 	python setup.py develop
 
+build:
+	python setup.py build
+
 clean:
+	python setup.py clean
+	for dir in $(MODULES); do \
+		$(MAKE) -C $$dir $@; \
+	done
 	rm -fr build qjira.egg-info
-	cd qjira && rm -fr __pycache__ && rm -f *.pyc
-	cd tests && rm -fr __pycache__ && rm -f *.pyc
 
 clean-all: clean
 	rm -fr _py27
@@ -35,6 +38,10 @@ clean-all: clean
 
 test:
 	python setup.py build test
+
+test-all: _py27 _py3
+	pushd _py27 && source bin/activate && $(MAKE) test && deactivate && popd
+	pushd _py3  && source bin/activate && $(MAKE) test && deactivate && popd
 
 dist:
 	python setup.py bdist
@@ -46,4 +53,4 @@ install:
 	@echo run setuptools
 
 
-.PHONY: all init clean clean-all test test-all install dist dist-all
+.PHONY: all init build clean clean-all test test-all install dist dist-all

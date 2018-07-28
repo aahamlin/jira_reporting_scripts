@@ -39,7 +39,7 @@ class VelocityCommand(BaseCommand):
         self._filter_by_date = filter_by_date
         self._target_sprint_ids = set()
         self._sprint_id_issuetypes = settings['velocity']['sprint_id_issuetypes'].split(',')
-        self._effort_field = settings['velocity']['effort_field']
+        self._effort_field = settings['effort_engine']['effort_field']
     
     @property
     def query(self):
@@ -57,7 +57,7 @@ class VelocityCommand(BaseCommand):
         return sorted_sprints
 
     def _reduce_process(self, rows):
-        '''reduce the rows to an array of dict structures where each sprint velocity is summarized in a single row.'''
+        '''reduce the {rows} to an array of dict structures where each sprint velocity is summarized in a single row.'''
         results = {}
 
         for s in self._raw_process(rows):
@@ -86,7 +86,7 @@ class VelocityCommand(BaseCommand):
         return results.values()
 
     def _get_points(self, r):
-        '''return point fields from row `r`'''
+        '''return point fields from row {r}'''
         #return tuple([v or 0 for k,v in r.items() if k in ['planned_points','carried_points','story_points','completed_points']])
         return (r['planned_effort'],
                 r['carried_effort'],
