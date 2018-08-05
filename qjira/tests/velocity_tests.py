@@ -2,9 +2,12 @@
 
 import unittest
 import datetime
+from copy import copy
 
 from qjira.commands import VelocityCommand
 from qjira import Log
+
+from qjira.config import settings
 
 from . import test_data
 from . import test_util
@@ -27,15 +30,12 @@ class TestVelocity(test_util.MockJira, unittest.TestCase):
     def test_process_0(self):
         data = list(self.command_under_test.execute())
         self.assertEqual(len(data), 0)
-        
+
     def test_process(self):
         '''The velocity command will calculate the planned points when a story 
         enters a sprint, the carried points when a story is not complete and
         enters a new sprint, the completed points when a story is finished in 
         a sprint.
-
-        The default command will reduce the data to a set of rows per sprint.
-        For original behavior use raw=True kwarg.
 
         sprint_name | planned | carried | total | completed
         My sprint     3.0       0.0       3.0     3.0
@@ -190,3 +190,55 @@ class TestVelocityWithForecast(test_util.MockJira, unittest.TestCase):
             'carried_effort': 0.0,
             'completed_effort': 0.0
         }, data[0])
+
+class TestVelocityTimeOriginalEstimate(test_util.MockJira, unittest.TestCase):
+
+    def setUp(self):
+        self.setup_mock_jira()
+        self._effort_field = settings['effort_engine']['effort_field']
+        settings.set('effort_engine','effort_field','timeoriginalestimate')
+        self.command_under_test = VelocityCommand(base_url='localhost:3000', project=['TEST'])
+        
+    def tearDown(self):
+        self.teardown_mock_jira()
+        settings.set('effort_engine','effort_field', self._effort_field)
+
+
+    def test_settings(self):
+        '''Velocity Command will process timeoriginalestimate setting'''
+        self.assertEqual(u'timeoriginalestimate', self.command_under_test._effort_field)
+
+    def test_process(self):
+        '''The velocity command will calculate the planned original estimate when a story 
+        enters a sprint, the carried estimate when a story is not complete and
+        enters a new sprint, the completed estimate when a story is finished in 
+        a sprint.
+
+        sprint_name | planned | carried | total | completed
+        My sprint     3.0       0.0       3.0     3.0
+
+        '''
+        self.json_response = {
+            'total': 2,
+            'issues': [
+                test_data.multiSprintStoryByTime(),
+                test_data.singleSprintStoryByTime()
+            ]
+        }
+        data = list(self.command_under_test.execute())
+        self.assertEqual(len(data), 2)
+        self.assertDictContainsSubset({
+            'sprint_name':'Chambers Sprint 9',
+            'planned_effort': 57600,
+            'carried_effort': 0,
+            'timeoriginalestimate': 57600,
+            'completed_effort': 28800
+        }, data[0])
+        self.assertDictContainsSubset({
+            'sprint_name': 'Chambers Sprint 10',
+            'planned_effort': 0,
+            'carried_effort': 28800,
+            'timeoriginalestimate': 28800,
+            'completed_effort': 28800
+        }, data[1])
+    

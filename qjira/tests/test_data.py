@@ -20,6 +20,12 @@ def singleSprintStory():
 def multiSprintStory():
     return _load_json('multi_sprint_story.json')
 
+def singleSprintStoryByTime():
+    return _load_json('single_sprint_story_time.json')
+    
+def multiSprintStoryByTime():
+    return _load_json('multi_sprint_story_time.json')
+
 def negativeHistoryStory():
     return _load_json('neg_history_story.json')
 
