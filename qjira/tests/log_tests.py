@@ -2,8 +2,6 @@
 Note these are currently skipped on python 2.7. The contextlib2 documentation
 states that it requires unittest2 for Python 2.x and this has not been done yet.
 """
-#from . import test_context
-
 import sys
 import io
 import unittest

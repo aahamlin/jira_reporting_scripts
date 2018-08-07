@@ -5,8 +5,8 @@ import os
 
 from . import jira_tests
 from . import log_tests
+from . import command_tests
 from . import unicode_csv_writer_tests
-
 from . import velocity_tests
 from . import cycletime_tests
 from . import summary_tests
@@ -20,6 +20,7 @@ def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(jira_tests))
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(log_tests))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(command_tests))
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(unicode_csv_writer_tests))
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(velocity_tests))
     suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(cycletime_tests))

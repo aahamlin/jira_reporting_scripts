@@ -1,4 +1,3 @@
-
 import unittest
 
 from qjira.commands import JQLCommand

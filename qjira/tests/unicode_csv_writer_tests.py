@@ -1,10 +1,6 @@
-from . import test_context
-
 import sys
-import io
 import unittest
 import re
-from collections import OrderedDict
 
 try:
     from contextlib import redirect_stdout
@@ -17,49 +13,9 @@ from qjira.commands import BaseCommand
 from . import test_data
 from . import test_util
 
-PY3 = sys.version_info > (3,)
+from .command_tests import TestCommand, BaseCommandTestCase
 
-class TestCommand(BaseCommand):
-
-    def __init__(self, *args, **kwargs):
-        super(TestCommand, self).__init__('test', *args, **kwargs)
-    
-    @property
-    def header(self):
-        return OrderedDict([('summary', 'Summary')])
-
-    @property
-    def query(self):
-        return ''
-
-class TestCommandTestCase(test_util.SPTestCase, test_util.MockJira, unittest.TestCase):
-
-    def setUp(self):
-        '''Setup for unicode tests require special handling for python version.'''
-        self.std_out = io.StringIO() if PY3 else io.BytesIO()
-
-        self.setup_mock_jira()
-
-        self.json_response = {
-            'total': 1,
-            'issues': [test_data.singleSprintStory()]
-        }
-        
-        # delegate to non-abstract test case
-        self._setup()
-
-    def tearDown(self):
-        self.teardown_mock_jira()
-
-    def getColumns(self, val):
-        lines = val.splitlines()
-        cols = lines[0].split(',')
-        return cols
-
-class TestUnicodeWriter(TestCommandTestCase):
-
-    def _setup(self):
-        self.command = TestCommand(project=['TEST'], base_url='localhost:3000')
+class TestUnicodeWriter(BaseCommandTestCase):
     
     def test_unicode_writer_encodes_ascii(self):
         '''Test that csv encoding converts unicode to ascii'''
@@ -83,7 +39,7 @@ class TestUnicodeWriter(TestCommandTestCase):
             csv_writer.write(sys.stdout, self.command, 'UTF-8')
         self.assertRegex_(self.std_out.getvalue(), utf8_re)
 
-class TestAllFields(TestCommandTestCase):
+class TestAllFields(BaseCommandTestCase):
 
     def _setup(self):
         self.command = TestCommand(project=['TEST'], base_url='localhost:3000', all_fields=True)

@@ -39,7 +39,6 @@ class VelocityCommand(BaseCommand):
         self._filter_by_date = filter_by_date
         self._target_sprint_ids = set()
         self._sprint_id_issuetypes = self._settings['velocity']['sprint_id_issuetypes'].split(',')
-        #self._effort_field = self._settings['effort_engine']['effort_field']
     
     @property
     def query(self):
@@ -87,7 +86,6 @@ class VelocityCommand(BaseCommand):
 
     def _get_points(self, r):
         '''return point fields from row {r}'''
-        #return tuple([v or 0 for k,v in r.items() if k in ['planned_points','carried_points','story_points','completed_points']])
         return (r['planned_effort'],
                 r['carried_effort'],
                 r.get(self._effort_engine['effort_field'], 0),
