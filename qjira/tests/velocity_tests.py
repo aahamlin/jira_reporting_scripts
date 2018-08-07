@@ -195,18 +195,18 @@ class TestVelocityTimeOriginalEstimate(test_util.MockJira, unittest.TestCase):
 
     def setUp(self):
         self.setup_mock_jira()
-        self._effort_field = settings['effort_engine']['effort_field']
-        settings.set('effort_engine','effort_field','timeoriginalestimate')
+        #self._effort_field = settings['effort_engine']['effort_field']
+        settings.set('jira','default_effort_engine','timeoriginalestimate_engine')
         self.command_under_test = VelocityCommand(base_url='localhost:3000', project=['TEST'])
         
     def tearDown(self):
         self.teardown_mock_jira()
-        settings.set('effort_engine','effort_field', self._effort_field)
+        settings.set('jira','default_effort_engine', 'story_points_engine')
 
 
-    def test_settings(self):
-        '''Velocity Command will process timeoriginalestimate setting'''
-        self.assertEqual(u'timeoriginalestimate', self.command_under_test._effort_field)
+#    def test_settings(self):
+#        '''Velocity Command will process timeoriginalestimate setting'''
+#        self.assertEqual(u'timeoriginalestimate', self.command_under_test._effort_field)
 
     def test_process(self):
         '''The velocity command will calculate the planned original estimate when a story 

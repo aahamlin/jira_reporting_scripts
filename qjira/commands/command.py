@@ -21,7 +21,8 @@ class BaseCommand:
     
     def __init__(self, name, pivot_field=None,
                  base_url=None, project=[],
-                 fixversion=[], all_fields=False, 
+                 fixversion=[], all_fields=False,
+                 settings=settings,
                  *args, **kwargs):
         '''Initialize a command.
         
@@ -44,6 +45,10 @@ class BaseCommand:
         self._fixversions = fixversion
         self._all_fields = all_fields
         self._pivot_field = pivot_field
+        self._settings = settings
+
+        effort_engine_name = settings['jira']['default_effort_engine']
+        self._effort_engine = settings[effort_engine_name]
         
         self.kwargs = kwargs
         
@@ -160,7 +165,7 @@ class BaseCommand:
                 del x[pivot_on]
                 Log.debug('Pivot on field {0}, {1} item(s)'.format(pivot_on, len(pivots)))
                 #print('> pivot on {0} sprints'.format(len(sprints)))
-                '''Create new json object for each sprint'''
+                # Create new json object for each pivot field
                 for pivot in pivots:
                     #print('> next sprint: {0}'.format(sprint['name']))
                     y = {pivot_on: pivot}

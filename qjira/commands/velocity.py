@@ -7,7 +7,7 @@ from functools import reduce as reduce_
 
 import datetime
 
-from ..config import settings
+#from ..config import settings
 from .command import BaseCommand
 from ..log import Log
 
@@ -38,13 +38,13 @@ class VelocityCommand(BaseCommand):
         self._forecast = forecast
         self._filter_by_date = filter_by_date
         self._target_sprint_ids = set()
-        self._sprint_id_issuetypes = settings['velocity']['sprint_id_issuetypes'].split(',')
-        self._effort_field = settings['effort_engine']['effort_field']
+        self._sprint_id_issuetypes = self._settings['velocity']['sprint_id_issuetypes'].split(',')
+        #self._effort_field = self._settings['effort_engine']['effort_field']
     
     @property
     def query(self):
         if self._include_bugs:
-            return settings['velocity']['query_bug']
+            return self._settings['velocity']['query_bug']
         else:
             return super(VelocityCommand, self).query
 
@@ -79,7 +79,7 @@ class VelocityCommand(BaseCommand):
             results[sprint_id].update({
                 'planned_effort': total_effort[0],
                 'carried_effort': total_effort[1],
-                self._effort_field: total_effort[2],
+                self._effort_engine['effort_field']: total_effort[2],
                 'completed_effort': total_effort[3]
             })
 
@@ -90,7 +90,7 @@ class VelocityCommand(BaseCommand):
         #return tuple([v or 0 for k,v in r.items() if k in ['planned_points','carried_points','story_points','completed_points']])
         return (r['planned_effort'],
                 r['carried_effort'],
-                r.get(self._effort_field, 0),
+                r.get(self._effort_engine['effort_field'], 0),
                 r['completed_effort'])
             
     def _raw_process(self, rows):
@@ -119,13 +119,15 @@ class VelocityCommand(BaseCommand):
                 self._target_sprint_ids.add(sprint_id)
             elif row['issuetype_name'] in self._sprint_id_issuetypes:
                 self._target_sprint_ids.add(sprint_id)
+            else:
+                Log.info('Activity in sprint "{1}" ({0}) on issue {2} excluded from results'.format(sprint_id, row['sprint_name'], row['issue_key']))
             
             if row['issue_key'] is not last_issue_seen:
                 last_issue_seen = row['issue_key']
                 counter = 0
             else:
                 counter += 1
-            effort_value = row.get(self._effort_field, DEFAULT_POINTS)
+            effort_value = row.get(self._effort_engine['effort_field'], DEFAULT_POINTS)
             planned_effort = effort_value if counter == 0 else DEFAULT_POINTS
             carried_effort = effort_value if counter >= 1 else DEFAULT_POINTS
             completed_effort = effort_value if self._isComplete(row) else DEFAULT_POINTS
@@ -136,7 +138,7 @@ class VelocityCommand(BaseCommand):
             }
             row.update(update)
             if Log.isDebugEnabled():
-                Log.debug('Issue {0} of {1} points in sprint {2}'.format(row['issue_key'], point_value, row['sprint_name']))
+                Log.debug('Issue {0} of {1} effort in sprint "{2}" ({3})'.format(row['issue_key'], effort_value, row['sprint_name'], sprint_id))
             yield row
 
     def _isComplete(self, row):
