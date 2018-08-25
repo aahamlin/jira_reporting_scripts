@@ -62,7 +62,7 @@ def _as_data(issue, reverse_sprints=False):
     if issue.get('changelog'):
         histories = sorted(issue['changelog']['histories'], key=lambda x: x['created'])
         change_history = dict([create_history(dict(item, created=h['created']))
-                               for h in histories for item in h['items'] if 'fieldId' in item])
+                               for h in histories for item in h['items']])
         data.update(change_history)
 
     if Log.isVerboseEnabled():

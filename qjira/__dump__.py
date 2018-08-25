@@ -21,8 +21,13 @@ def dump_command(command, encoding):
     issue = next(command.execute())
     Log.debug('Retrieved {}'.format(issue))
     for k in sorted(issue):
-        print('{} ({}):\t{}'.format(k, headers.get(k.lower()), issue[k]))
-
+        _k = _encode(encoding, k)
+        _v = _encode(encoding, headers.get(k.lower()))
+        _i = _encode(encoding, issue[k])
+        _str = '{} ({}):\t{}'.format(_k, _v, _i)
+        sys.stdout.write(_str)
+        sys.stdout.write('\n')
+            
 def create_parser(settings):
 
     base_url = settings['jira']['base_url']
