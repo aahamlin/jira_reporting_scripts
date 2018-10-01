@@ -47,8 +47,8 @@ class BaseCommand:
         self._pivot_field = pivot_field
         self._settings = settings
 
-        effort_engine_name = settings['jira']['default_effort_engine']
-        self._effort_engine = settings[effort_engine_name]
+        effort_engine_name = settings.get('jira','default_effort_engine')
+        self._effort_engine = dict(settings.items(effort_engine_name))
         
         self.kwargs = kwargs
         
@@ -68,8 +68,8 @@ class BaseCommand:
         '''
         Return OrderedDict of CSV column keys and user-friendly names.
         '''
-        header = OrderedDict.fromkeys(settings[self._name]['headers'].split(','))
-        header.update({k:v for k,v in settings['headers'].items() if k in header.keys()})
+        header = OrderedDict.fromkeys(settings.get(self._name, 'headers').split(','))
+        header.update({k:v for k,v in settings.items('headers') if k in header.keys()})
         return header
     
     @property
@@ -84,7 +84,7 @@ class BaseCommand:
     def query(self):
         '''Return the JQL query for this command.'''
         #raise NotImplementedError()
-        return settings[self._name]['query']
+        return settings.get(self._name, 'query')
 
     @property
     def writer(self):

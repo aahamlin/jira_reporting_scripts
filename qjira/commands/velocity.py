@@ -38,12 +38,12 @@ class VelocityCommand(BaseCommand):
         self._forecast = forecast
         self._filter_by_date = filter_by_date
         self._target_sprint_ids = set()
-        self._sprint_id_issuetypes = self._settings['velocity']['sprint_id_issuetypes'].split(',')
+        self._sprint_id_issuetypes = self._settings.get('velocity','sprint_id_issuetypes').split(',')
     
     @property
     def query(self):
         if self._include_bugs:
-            return self._settings['velocity']['query_bug']
+            return self._settings.get('velocity', 'query_bug')
         else:
             return super(VelocityCommand, self).query
 

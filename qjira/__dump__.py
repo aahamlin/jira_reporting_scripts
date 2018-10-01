@@ -16,7 +16,7 @@ from .encoder import _encode
 from .commands import JQLCommand
 
 def dump_command(command, encoding):
-    headers = dict(settings['headers'].items())
+    headers = dict(settings.items('headers'))
     Log.debug(headers)
     issue = next(command.execute())
     Log.debug('Retrieved {}'.format(issue))
@@ -30,7 +30,7 @@ def dump_command(command, encoding):
             
 def create_parser(settings):
 
-    base_url = settings['jira']['base_url']
+    base_url = settings.get('jira','base_url')
     
     parser = argparse.ArgumentParser(
         prog='qjira_dump',

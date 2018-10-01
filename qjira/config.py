@@ -16,8 +16,10 @@ INSTALLPATH = os.path.dirname(os.path.abspath(__file__))
 def read_config():
     '''Create basic configuration'''
     config = configparser.ConfigParser()
+    print("INSTALLPATH = %s" % INSTALLPATH)
     config.readfp(open(os.path.join(INSTALLPATH, 'defaults.ini')))
     config.read([os.path.expanduser('~/.qjira')])
     return config
 
 settings = read_config()
+print(settings)

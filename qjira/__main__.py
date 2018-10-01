@@ -64,7 +64,7 @@ def date_string(string):
 
 def create_parser(settings):
 
-    base_url = settings['jira']['base_url']
+    base_url = settings.get('jira', 'base_url')
     
     parser = argparse.ArgumentParser(
         prog='qjira',

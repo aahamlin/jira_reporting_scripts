@@ -13,7 +13,7 @@ from .config import settings
 from .log import Log
 from .dataprocessor import extract_sprint, create_history
 
-CUSTOM_FIELD_MAP = dict(settings['custom_fields'].items())
+CUSTOM_FIELD_MAP = dict(settings.items('custom_fields'))
 
 ISSUE_ENDPOINT='{}/rest/api/2/issue/{}'
 
@@ -23,9 +23,9 @@ ISSUE_BROWSE='{}/browse/{}'
     
 HEADERS = {'content-type': 'application/json'}
 
-DEFAULT_FIELDS = settings['jira']['default_fields'].split(',')
+DEFAULT_FIELDS = settings.get('jira','default_fields').split(',')
 
-DEFAULT_EXPANDS = settings['jira']['default_expands'].split(',')
+DEFAULT_EXPANDS = settings.get('jira','default_expands').split(',')
 
 def _get_json(url, username=None, password=None, headers=HEADERS):
     r = requests.get(url, auth=(username, password), headers=headers)
