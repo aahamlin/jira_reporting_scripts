@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import requests
 import datetime
 import json
+import re
+from dateutil import parser as date_parser
 
 try:
     from urllib import urlencode
@@ -11,7 +13,7 @@ except ImportError:
 
 from .config import settings
 from .log import Log
-from .dataprocessor import extract_sprint, create_history
+from .text_utils import _generate_name
 
 CUSTOM_FIELD_MAP = dict(settings.items('custom_fields'))
 
@@ -27,6 +29,35 @@ DEFAULT_FIELDS = settings.get('jira','default_fields').split(',')
 
 DEFAULT_EXPANDS = settings.get('jira','default_expands').split(',')
 
+def create_history(hst):
+    '''Create a tuple of important info from a changelog history.'''
+    if hst['field'] == 'status' and hst['toString']:
+        field_name = hst['field'].replace(' ', '')
+        normalized_string = hst['toString'].replace(' ', '')
+    else:
+        field_name = hst['field'].replace(' ', '_').lower()
+        normalized_string = 'changed'
+    created_date = date_parser.parse(hst['created']).date()
+    entry = _generate_name(field_name,normalized_string), created_date
+    #print ('Entry;',entry)
+    return entry
+
+def extract_sprint(sprint):
+    '''Return a dict object containing sprint details.'''
+    m = re.search('\[(.+)\]', sprint)
+    if m:
+        d = dict(e.split('=') for e in m.group(1).split(','))
+        for n in ('startDate','endDate','completeDate'):
+            try:
+                the_date = date_parser.parse(d[n]).date()
+                d[n]= the_date
+            except ValueError:
+                d[n] = None
+        #print('> extract_sprint returns: {0}'.format(d))
+        return d
+    raise ValueError
+
+
 def _get_json(url, username=None, password=None, headers=HEADERS):
     r = requests.get(url, auth=(username, password), headers=headers)
     Log.debug(r.status_code)
@@ -34,6 +65,12 @@ def _get_json(url, username=None, password=None, headers=HEADERS):
     return r.json()
 
 def _as_data(issue, reverse_sprints=False):
+    """
+    Manipulate the default JSON structure for customized JIRA installs.
+    Such as, mapping customfield_* entries to user-defined names and
+    transforming the changelog history entries to permit tracing of events
+    over time.
+    """
     if Log.isDebugEnabled():
         Log.verbose('enter jira._as_data: issue, reverse_sprints={0}'.format(reverse_sprints))
     if Log.isVerboseEnabled():

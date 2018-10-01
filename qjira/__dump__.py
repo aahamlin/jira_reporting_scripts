@@ -12,7 +12,7 @@ from .config import settings
 from . import Log
 from . import credential_store as creds
 
-from .encoder import _encode
+from .text_utils import _encode
 from .commands import JQLCommand
 
 def dump_command(command, encoding):

@@ -1,7 +1,7 @@
 
 from datetime import datetime
 
-from .encoder import _encode
+from .text_utils import _encode
 
 TABLE_STYLE = 'style="border-width: 1px; width: 100%; border-color: #DADADA; border-style: solid; font-family: "Helvetica Neue",Helvetica,Arial,Lucida Grande,sans-serif;"'
 

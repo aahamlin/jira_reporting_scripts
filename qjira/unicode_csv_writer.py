@@ -1,6 +1,6 @@
 import csv
 
-from .encoder import _encode
+from .text_utils import _encode
 
 
 def write(f, command, encoding, delimiter=','):
