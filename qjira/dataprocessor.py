@@ -22,7 +22,7 @@ def flatten_json_struct(data, count_fields=[], datetime_fields=[]):
                 yield k, date_parser.parse(v).date()
             elif _isstring(v):
                 #print('> yielding value {0}: {1}'.format(k, repr(v)))
-                yield k, v.replace('\r\n', ' ')
+                yield k, v.replace('\r', '').replace('\n', ' ')
             else:
                 #print('> yielding value {0}: {1}'.format(k, repr(v)))
                 yield k, v
