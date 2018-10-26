@@ -19,6 +19,8 @@ CUSTOM_FIELD_MAP = dict(settings.items('custom_fields'))
 
 ISSUE_ENDPOINT='{}/rest/api/2/issue/{}'
 
+ISSUE_WORKLOG_ENDPOINT=ISSUE_ENDPOINT + '/worklog'
+
 ISSUE_SEARCH_ENDPOINT='{}/rest/api/2/search?{}'
 
 ISSUE_BROWSE='{}/browse/{}'
@@ -29,6 +31,9 @@ DEFAULT_FIELDS = settings.get('jira','default_fields').split(',')
 
 DEFAULT_EXPANDS = settings.get('jira','default_expands').split(',')
 
+#
+# Histogram-type reports would require collecting lists of changes to fields.
+#
 def create_history(hst):
     '''Create a tuple of important info from a changelog history.'''
     if hst['field'] == 'status' and hst['toString']:
@@ -102,6 +107,11 @@ def _as_data(issue, reverse_sprints=False):
                                for h in histories for item in h['items']])
         data.update(change_history)
 
+    # raw changelog history entries
+    show_all_changelog_entries = False
+    if show_all_changelog_entries and issue.get('changelog'):
+        data.update({'changelog': histories})
+
     if Log.isVerboseEnabled():
         Log.verbose('qjira json format: {0}'.format(
             json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))))
@@ -114,12 +124,18 @@ def default_fields():
     '''Return fields to retrieve from Jira'''
     return DEFAULT_FIELDS[:]
 
+def get_worklog(baseUrl, issuekey, username=None, password=None):
+    """Retrieve the worklog history for an issue."""
+    url = ISSUE_WORKLOG_ENDPOINT.format(baseUrl, issuekey)
+    Log.debug('url = ' + url)
+    return _get_json(url, username=username, password=password)
+
 def get_browse_url(baseUrl, issuekey):
     if not issuekey:
         raise ValueError
     return ISSUE_BROWSE.format(baseUrl, issuekey)
 
-def get_issue(baseUrl, issuekey,username=None, password=None):
+def get_issue(baseUrl, issuekey, username=None, password=None):
     # this does not pass in the query string
     url = ISSUE_ENDPOINT.format(baseUrl, issuekey)
     Log.debug('url = ' + url)

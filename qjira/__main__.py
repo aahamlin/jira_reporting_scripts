@@ -23,6 +23,7 @@ from .commands import CycleTimeCommand
 from .commands import SummaryCommand
 from .commands import TechDebtCommand
 from .commands import BacklogCommand
+from .commands import WorklogCommand
 from .commands import JQLCommand
 
 PY3 = sys.version_info > (3,)
@@ -202,6 +203,17 @@ def create_parser(settings):
         help='Query bug backlog by fixVersion')
 
     parser_backlog.set_defaults(func=BacklogCommand)
+
+    parser_worklog = subparsers.add_parser('worklog',
+        parents=[parser_common],
+        help='Query worklog entries')
+
+    parser_worklog.add_argument('author',
+        metavar='AUTHOR',
+        nargs='+',
+        help='Author name(s)')
+
+    parser_worklog.set_defaults(func=WorklogCommand)
     
     parser_jql = subparsers.add_parser('jql',
         parents=[parser_common],

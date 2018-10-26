@@ -7,3 +7,5 @@ def _encode(encoding, s):
 def _generate_name(*args):
     return '_'.join([six.text_type(a) for a in args])
 
+def _isstring(s):
+    return isinstance(s, six.string_types)

@@ -68,7 +68,8 @@ class BaseCommand:
         '''
         Return OrderedDict of CSV column keys and user-friendly names.
         '''
-        header = OrderedDict.fromkeys(settings.get(self._name, 'headers').split(','))
+        header_keys = settings.get(self._name, 'headers').split(',')
+        header = OrderedDict(zip(header_keys, header_keys))
         header.update({k:v for k,v in settings.items('headers') if k in header.keys()})
         return header
     

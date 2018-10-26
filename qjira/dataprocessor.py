@@ -3,7 +3,7 @@
 import re
 from dateutil import parser as date_parser
 
-from .text_utils import _generate_name
+from .text_utils import _generate_name, _isstring
 from .log import Log
 
 re_prog = re.compile('[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}:[0-9]{2}\.[0-9]{3}\-[0-9]{4}')
@@ -14,13 +14,17 @@ def flatten_json_struct(data, count_fields=[], datetime_fields=[]):
 
     Skips entry when value is None
     """
+    #print('flatten_json_struct: ', data)
     for k,v in data.items():
         if v and type(v) != dict and type(v) != list:
             if k in datetime_fields and re_prog.match(v):
                 #print('> yielding date {0}'.format(k))
                 yield k, date_parser.parse(v).date()
+            elif _isstring(v):
+                #print('> yielding value {0}: {1}'.format(k, repr(v)))
+                yield k, v.replace('\r\n', ' ')
             else:
-                #print('> yielding value {0}: {1}'.format(k, v))
+                #print('> yielding value {0}: {1}'.format(k, repr(v)))
                 yield k, v
         elif type(v) == list:
             if k in count_fields:
