@@ -213,6 +213,13 @@ def create_parser(settings):
         nargs='+',
         help='Author name(s)')
 
+    parser_worklog.add_argument('-S', '--start-date',
+        type=date_string,
+        metavar='START',
+        default=None,
+        help='Exclude worklogDate before start date')
+
+
     parser_worklog.set_defaults(func=WorklogCommand)
     
     parser_jql = subparsers.add_parser('jql',

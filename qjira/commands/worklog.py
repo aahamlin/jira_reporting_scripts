@@ -35,18 +35,24 @@ from ..jira import get_worklog
 from ..log import Log
 
 class WorklogCommand(BaseCommand):
-    def __init__(self, author=[], *args, **kwargs):
+    def __init__(self, author=[], start_date=None, *args, **kwargs):
         super(WorklogCommand, self).__init__('worklog', *args, **kwargs)
 
         if not author:
             raise TypeError('Missing required argument "author"')
 
         self._author = author
+        self._start_date = start_date
 
     @property
     def query(self):
         """Build worklog author query"""
-        return 'worklogAuthor in (%s)' % ', '.join(self._author)
+        base_query = 'worklogAuthor in (%s)' % ', '.join(self._author)
+        if self._start_date:
+            #print('filtering worklogs by start-date', self._start_date)
+            return ' AND '.join([base_query, 'worklogDate >= %s' % self._start_date])
+        else:
+            return base_query
 
     @property
     def datetime_fields(self):

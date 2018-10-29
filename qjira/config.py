@@ -6,6 +6,8 @@ Description: library to load configuration settings.
 '''
 import os
 
+from .log import Log
+
 try:
     import configparser
 except ImportError:
@@ -16,10 +18,11 @@ INSTALLPATH = os.path.dirname(os.path.abspath(__file__))
 def read_config():
     '''Create basic configuration'''
     config = configparser.ConfigParser()
-    print("INSTALLPATH = %s" % INSTALLPATH)
+    Log.debug("INSTALLPATH = %s" % INSTALLPATH)
     config.readfp(open(os.path.join(INSTALLPATH, 'defaults.ini')))
+    Log.debug("user config = %s" % os.path.expanduser('~/.qjira'))
     config.read([os.path.expanduser('~/.qjira')])
     return config
 
 settings = read_config()
-print(settings)
+
