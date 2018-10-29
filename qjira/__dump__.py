@@ -61,22 +61,7 @@ def create_parser(settings):
         metavar='ENC',
         default='ASCII',
         help='Specify an output encoding. In Python 2.x, only default ASCII is supported.')
-
-    parser.add_argument('-A', '--all-fields',
-        action='store_true',
-        help='Extract all "navigable" fields in Jira, [fields=*navigable]')
-
     
-    parser.add_argument('--add-field', '-f',
-        action='append',
-        metavar='NAME',
-        help='Add field(s) to Jira request')
-
-    parser.add_argument('--add-column', '-c',
-        action='append',
-        metavar='NAME',
-        help='Add column(s) to CSV output')
-
     parser.add_argument('issuekey',
         help='Provide an issuekey value.')
 
@@ -111,6 +96,7 @@ def main(args=None):
     func_args.update({
         'username': username,
         'password': password,
+        'all_fields': True,
         'jql': 'issuekey = %s' % my_args.issuekey
     })
 
