@@ -8,7 +8,6 @@ from .log import Log
 
 re_prog = re.compile('[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}:[0-9]{2}\.[0-9]{3}\-[0-9]{4}')
 
-
 def flatten_json_struct(data, count_fields=[], datetime_fields=[]):
     """data is a dict of nested JSON structures, returns a flattened array of tuples.
 
@@ -46,3 +45,26 @@ def flatten_json_struct(data, count_fields=[], datetime_fields=[]):
                                             datetime_fields=datetime_fields):
                 #print('> yielding {0}: {1}'.format(item, type(item)))
                 yield item[0], item[1]
+
+
+
+def load_changelog(data):
+    if data.get('_changelog'):
+        histories = sorted(data['_changelog']['histories'], key=lambda x: x['created'])
+        print('load_changelog found {} history entries'.format(len(histories)))
+        change_history = dict([_create_history(dict(item, created=h['created']))
+                               for h in histories for item in h['items']])
+        data.update(change_history)
+
+def _create_history(history):
+    '''Create a tuple of important info from a changelog history.'''
+    if history['field'] == 'status' and history['toString']:
+        field_name = history['field'].replace(' ', '')
+        normalized_string = history['toString'].replace(' ', '')
+    else:
+        field_name = history['field'].replace(' ', '_').lower()
+        normalized_string = 'changed'
+    created_date = date_parser.parse(history['created']).date()
+    entry = _generate_name(field_name,normalized_string), created_date
+    #print ('Entry;',entry)
+    return entry

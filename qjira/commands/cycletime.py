@@ -3,6 +3,7 @@ from operator import itemgetter
 from ..config import settings
 from ..log import Log
 from .command import BaseCommand
+from ..dataprocessor import load_changelog
 
 def networkdays(start, end):
     return '=NETWORKDAYS("{}","{}")'.format(start, end)
@@ -25,8 +26,10 @@ class CycleTimeCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
         super(CycleTimeCommand, self).__init__('cycletime', *args, **kwargs)
 
+    ### REWRITE: use NEW changelog history management
     def pre_process(self, src):
         for x in src:
+            load_changelog(x)
             if not x.get('story_points'):
                 continue
             # if finished without progress, then cycletime = 0

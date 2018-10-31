@@ -10,6 +10,7 @@ import datetime
 #from ..config import settings
 from .command import BaseCommand
 from ..log import Log
+from ..dataprocessor import load_changelog
 
 DEFAULT_POINTS = 0.0
 
@@ -33,7 +34,7 @@ class VelocityCommand(BaseCommand):
     '''
 
     def __init__(self, include_bugs=False, forecast=False, filter_by_date=None, *args, **kwargs):
-        super(VelocityCommand, self).__init__('velocity', pivot_field='sprint', *args, **kwargs)
+        super(VelocityCommand, self).__init__('velocity', pivot_field='sprint', pre_load=load_changelog,  *args, **kwargs)
         self._include_bugs = include_bugs
         self._forecast = forecast
         self._filter_by_date = filter_by_date
@@ -46,7 +47,7 @@ class VelocityCommand(BaseCommand):
             return self._settings.get('velocity', 'query_bug')
         else:
             return super(VelocityCommand, self).query
-
+        
     def post_process(self, rows):
         '''data processor wrapper to calculate points as planned, carried, completed'''
         results = self._reduce_process(rows)

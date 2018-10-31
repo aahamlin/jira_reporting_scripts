@@ -11,6 +11,7 @@ from ..log import Log
 from .command import BaseCommand
 from .. import jira
 from .. import summary_html_writer
+from ..dataprocessor import load_changelog
 
 # Sprints w/o dates and Issues without sprints
 SORT_DEFAULT_YEAR = datetime.date(datetime.MINYEAR, 1, 1)
@@ -37,7 +38,7 @@ def sprint_header(sprint_name, sprint_startDate, sprint_endDate):
 class SummaryCommand(BaseCommand):
 
     def __init__(self, mark_if_new=False, use_csv_formatter=False, *args, **kwargs):
-        super(SummaryCommand, self).__init__('summary', *args, **kwargs)
+        super(SummaryCommand, self).__init__('summary', pre_load=load_changelog, *args, **kwargs)
         
         self._mark_if_new = mark_if_new
         self._use_csv_formatter = use_csv_formatter

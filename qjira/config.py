@@ -20,8 +20,8 @@ def read_config():
     config = configparser.ConfigParser()
     Log.debug("INSTALLPATH = %s" % INSTALLPATH)
     config.readfp(open(os.path.join(INSTALLPATH, 'defaults.ini')))
-    Log.debug("user config = %s" % os.path.expanduser('~/.qjira'))
-    config.read([os.path.expanduser('~/.qjira')])
+    Log.debug("user config = %s" % os.path.expanduser('~/.qjira.ini'))
+    config.read([os.path.expanduser('~/.qjira.ini')])
     return config
 
 settings = read_config()

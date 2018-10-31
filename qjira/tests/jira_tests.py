@@ -6,6 +6,7 @@ from functools import partial
 
 import qjira.jira as j
 from qjira.log import Log
+from qjira.dataprocessor import load_changelog
 
 from . import test_data
 from . import test_util
@@ -50,6 +51,7 @@ class TestJiraFunc(test_util.MockJira, unittest.TestCase):
         issue['fields']['customfield_10112'] = 'severity-field'
         self.json_response = {'total': 1, 'issues': [issue]}
         data = next(j.all_issues(TEST_BASE_URL, 'issuetype = Story'))
+        load_changelog(data)
         self.assertDictContainsSubset(
             {
                 'issue_key':124,

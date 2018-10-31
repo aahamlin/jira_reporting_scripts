@@ -13,7 +13,6 @@ except ImportError:
 
 from .config import settings
 from .log import Log
-from .text_utils import _generate_name
 
 CUSTOM_FIELD_MAP = dict(settings.items('custom_fields'))
 
@@ -30,22 +29,6 @@ HEADERS = {'content-type': 'application/json'}
 DEFAULT_FIELDS = settings.get('jira','default_fields').split(',')
 
 DEFAULT_EXPANDS = settings.get('jira','default_expands').split(',')
-
-#
-# Histogram-type reports would require collecting lists of changes to fields.
-#
-def create_history(hst):
-    '''Create a tuple of important info from a changelog history.'''
-    if hst['field'] == 'status' and hst['toString']:
-        field_name = hst['field'].replace(' ', '')
-        normalized_string = hst['toString'].replace(' ', '')
-    else:
-        field_name = hst['field'].replace(' ', '_').lower()
-        normalized_string = 'changed'
-    created_date = date_parser.parse(hst['created']).date()
-    entry = _generate_name(field_name,normalized_string), created_date
-    #print ('Entry;',entry)
-    return entry
 
 def extract_sprint(sprint):
     '''Return a dict object containing sprint details.'''
@@ -102,15 +85,7 @@ def _as_data(issue, reverse_sprints=False):
         
     #copy in changelog
     if issue.get('changelog'):
-        histories = sorted(issue['changelog']['histories'], key=lambda x: x['created'])
-        change_history = dict([create_history(dict(item, created=h['created']))
-                               for h in histories for item in h['items']])
-        data.update(change_history)
-
-    # raw changelog history entries
-    show_all_changelog_entries = False
-    if show_all_changelog_entries and issue.get('changelog'):
-        data.update({'changelog': histories})
+        data.update({'_changelog': issue['changelog']})
 
     if Log.isVerboseEnabled():
         Log.verbose('qjira json format: {0}'.format(

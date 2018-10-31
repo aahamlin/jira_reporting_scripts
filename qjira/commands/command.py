@@ -22,6 +22,7 @@ class BaseCommand:
     def __init__(self, name, pivot_field=None,
                  base_url=None, project=[],
                  fixversion=[], all_fields=False,
+                 pre_load=None,
                  settings=settings,
                  *args, **kwargs):
         '''Initialize a command.
@@ -46,6 +47,7 @@ class BaseCommand:
         self._all_fields = all_fields
         self._pivot_field = pivot_field
         self._settings = settings
+        self._pre_load = pre_load
 
         effort_engine_name = settings.get('jira','default_effort_engine')
         self._effort_engine = dict(settings.items(effort_engine_name))
@@ -161,6 +163,9 @@ class BaseCommand:
 
         pivot_on = self.pivot_field
         for x in generate_data:
+            if self._pre_load:
+                self._pre_load(x)
+                
             if pivot_on and pivot_on in x and x[pivot_on]:
                 pivots = copy.copy(x[pivot_on])
                 del x[pivot_on]
