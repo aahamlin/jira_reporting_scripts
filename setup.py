@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='qjira',
-      version='0.99.18',
+      version='0.99.10',
       description='Query JIRA Cloud REST API',
       author='Andrew Hamlin',
       author_email='andrew.hamlin@sailpoint.com',
@@ -14,7 +14,8 @@ setup(name='qjira',
       entry_points={
           'console_scripts': [
               'qjira = qjira.__main__:main',
-              'qjira_dump = qjira.__dump__:main'
+              'qjira_dump = qjira.__dump__:main',
+              'qwork = qjira.__myworklog__:main'
           ]
       },
       test_suite='qjira.tests.suite',

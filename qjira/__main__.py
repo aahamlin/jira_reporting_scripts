@@ -210,7 +210,7 @@ def create_parser(settings):
 
     parser_worklog.add_argument('author',
         metavar='AUTHOR',
-        nargs='+',
+        nargs='*',
         help='Author name(s)')
 
     parser_worklog.add_argument('-S', '--start-date',
@@ -219,6 +219,10 @@ def create_parser(settings):
         default=None,
         help='Exclude worklogDate before start date')
 
+    parser_worklog.add_argument('--authors-only',
+        dest='restrict_to_username',
+        action='store_true',
+        help='Restrict listings to authors provided.')
 
     parser_worklog.set_defaults(func=WorklogCommand)
     
