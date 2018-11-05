@@ -37,7 +37,7 @@ from ..jira import get_worklog
 from ..log import Log
 
 class WorklogCommand(BaseCommand):
-    def __init__(self, author=[], start_date=None, restrict_to_username=True, *args, **kwargs):
+    def __init__(self, author=[], start_date=None, end_date=None, restrict_to_username=True, total_by_username=False, *args, **kwargs):
         super(WorklogCommand, self).__init__('worklog', *args, **kwargs)
 
         if restrict_to_username and not author:
@@ -46,17 +46,33 @@ class WorklogCommand(BaseCommand):
         if not author:
             raise TypeError('Missing required argument "author"')
 
-        self._author = author
-        self._start_date = start_date
+        self._author = [a.lower() for a in author]
         self._restrict_to_username = restrict_to_username
+        self._total_by_username = total_by_username
+
+        self._start_date = start_date
+        self._end_date = end_date
+
+        if start_date and end_date:
+            self._date_filter = lambda d: d >= start_date and d <= end_date
+        elif start_date:
+            self._date_filter = lambda d: d >= start_date
+        elif end_date:
+            self._date_filter = lambda d: d <= end_date
+        else:
+            self._date_filter = None
 
     @property
     def query(self):
         """Build worklog author query"""
         base_query = 'worklogAuthor in (%s)' % ', '.join(self._author)
-        if self._start_date:
+        if self._start_date and self._end_date:
+            return ' AND '.join([base_query, 'worklogDate >= %s AND worklogDate <= %s' % (self._start_date, self._end_date)])
+        elif self._start_date:
             #print('filtering worklogs by start-date', self._start_date)
             return ' AND '.join([base_query, 'worklogDate >= %s' % self._start_date])
+        elif self._end_date:
+            return ' AND '.join([base_query, 'worklogDate <= %s' % self._end_date])
         else:
             return base_query
 
@@ -88,8 +104,8 @@ class WorklogCommand(BaseCommand):
             rows = [r for r in rows if r['worklog_author_name'] in self._author]
 
         # filter by start date
-        if self._start_date:
-            rows = [r for r in rows if r['worklog_started'] >= self._start_date]
+        if self._date_filter:
+            rows = [r for r in rows if self._date_filter(r['worklog_started'])]
 
         accumulated = {}
 
@@ -118,6 +134,9 @@ class WorklogCommand(BaseCommand):
             if r['issue_key'] not in accumulated[author_name][started]['issue_keys']:
                 accumulated[author_name][started]['issue_keys'].append(r['issue_key'])
 
+            if not self._total_by_username:
+                continue
+                
             if date_max not in accumulated[author_name]:
                 accumulated[author_name][date_max] = {}
 
