@@ -215,9 +215,15 @@ def create_parser(settings):
 
     parser_worklog.add_argument('-S', '--start-date',
         type=date_string,
-        metavar='START',
+        metavar='yyyy/mm/dd',
         default=None,
         help='Exclude worklogDate before start date')
+
+    parser_worklog.add_argument('-E', '--end-date',
+        type=date_string,
+        metavar='yyyy/mm/dd',
+        default=None,
+        help='Exclude worklogDate after end date')
 
     parser_worklog.add_argument('--authors-only',
         dest='restrict_to_username',
