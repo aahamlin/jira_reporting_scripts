@@ -1,9 +1,11 @@
 from operator import itemgetter
 
+import re
+
 from ..config import settings
 from ..log import Log
 from .command import BaseCommand
-from ..dataprocessor import load_changelog
+from ..dataprocessor import load_transitions
 
 def networkdays(start, end):
     return '=NETWORKDAYS("{}","{}")'.format(start, end)
@@ -24,22 +26,8 @@ class CycleTimeCommand(BaseCommand):
     '''
 
     def __init__(self, *args, **kwargs):
-        super(CycleTimeCommand, self).__init__('cycletime', *args, **kwargs)
+        super(CycleTimeCommand, self).__init__('cycletime', pre_load=load_transitions, *args, **kwargs)
 
-    ### REWRITE: use NEW changelog history management
-    def pre_process(self, src):
-        for x in src:
-            load_changelog(x)
-            if not x.get('story_points'):
-                continue
-            # if finished without progress, then cycletime = 0
-            if not x.get('status_InProgress'):
-                x['status_InProgress'] = x['status_Done']
-            x['count_days'] = networkdays(x['status_InProgress'], x['status_Done'])
-            yield x
-    
-    def post_process(self, rows):
-        rows = sorted(rows, key=itemgetter('status_Done'))
-        rows = sorted(rows, key=itemgetter('status_InProgress'))
-        return rows
-            
+    @property
+    def pivot_field(self):
+        return 'transitions'

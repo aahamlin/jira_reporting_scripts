@@ -49,10 +49,21 @@ def flatten_json_struct(data, count_fields=[], datetime_fields=[]):
 
 
 def load_changelog(data):
+    update_data_history(data, _create_history)
+
+def load_transitions(data):
+    histories = sorted(data['_changelog']['histories'], key=lambda x: x['created'])
+    transitions = [_transition(dict(item, created=h['created']))
+                   for h in histories for item in h['items']
+                   if item['field'] == 'status']
+    #print('>> transitions', transitions)
+    data.update({'transitions': transitions})
+    
+def update_data_history(data, callback):
     if data.get('_changelog'):
         histories = sorted(data['_changelog']['histories'], key=lambda x: x['created'])
-        print('load_changelog found {} history entries'.format(len(histories)))
-        change_history = dict([_create_history(dict(item, created=h['created']))
+        #print('load_changelog found {} history entries'.format(len(histories)))
+        change_history = dict([callback(dict(item, created=h['created']))
                                for h in histories for item in h['items']])
         data.update(change_history)
 
@@ -68,3 +79,18 @@ def _create_history(history):
     entry = _generate_name(field_name,normalized_string), created_date
     #print ('Entry;',entry)
     return entry
+
+def _transition(history):
+    '''Create a tuple of important info from a changelog history.'''
+    normalized_from_string = history.get('fromString', 'New')
+    normalized_to_string = history.get('toString', 'Open')
+    field_name = 'from_{0}'.format(normalized_from_string).replace(' ', '')
+    normalized_string = 'to_{0}'.format(normalized_to_string).replace(' ', '')
+    created_date = date_parser.parse(history['created']).date()
+    name = _generate_name(field_name,normalized_string)
+    #print ('Entry;',entry)
+    return {
+        'name': name,
+        'change_date': created_date
+    }
+
