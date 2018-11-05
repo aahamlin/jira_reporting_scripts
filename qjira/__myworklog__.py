@@ -101,7 +101,8 @@ def main(args=None):
     func_args.update({
         'username': username,
         'password': password,
-        'restrict_to_username': True
+        'restrict_to_username': True,
+        'total_by_username': True
     })
 
     command = my_args.func(**func_args)
