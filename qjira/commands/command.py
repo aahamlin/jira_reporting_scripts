@@ -51,6 +51,8 @@ class BaseCommand:
 
         effort_engine_name = settings.get('jira','default_effort_engine')
         self._effort_engine = dict(settings.items(effort_engine_name))
+
+        self._header_keys = list(settings.get(self._name, 'headers').split(','))
         
         self.kwargs = kwargs
         
@@ -61,6 +63,11 @@ class BaseCommand:
                        fields=self._get_jira_fields(),
                        **self.kwargs)
 
+    def _build_header_dict(self, keys):
+        header = OrderedDict(zip(keys, keys))
+        header.update({k:v for k,v in settings.items('headers') if k in keys})
+        return header
+    
     @property
     def show_all_fields(self):
         return self._all_fields
@@ -70,18 +77,16 @@ class BaseCommand:
         '''
         Return OrderedDict of CSV column keys and user-friendly names.
         '''
-        header_keys = settings.get(self._name, 'headers').split(',')
-        header = OrderedDict(zip(header_keys, header_keys))
-        header.update({k:v for k,v in settings.items('headers') if k in header.keys()})
+        header = OrderedDict(zip(self.header_keys, self.header_keys))
+        header.update({k:v for k,v in settings.items('headers') if k in self.header_keys})
+
         return header
     
     @property
     def header_keys(self):
         '''Return the list of CSV column keys to print.
-
-        See also, expand_header.
         '''
-        return list(self.header.keys())
+        return self._header_keys
 
     @property
     def query(self):

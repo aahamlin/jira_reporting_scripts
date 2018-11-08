@@ -1,4 +1,4 @@
-# Jira Reporting Scripts (0.99.18)
+# Jira Reporting Scripts (0.99.19)
 
 To address some of the deficiencies in Jira reporting, here is a small command line tool to 
 exercise the [Jira REST API](https://docs.atlassian.com/jira/REST/cloud/) to retrieve information about Stories,
@@ -33,7 +33,9 @@ The usage interface has changed. Command names are now full words. Global output
 
 ## New Features
 
-The configuration of commands are being extracted to configuration file, `defaults.ini`.
+The configuration of commands are being extracted to configuration file, `defaults.ini`. Users can override by creating `$HOME/.qjira.ini`.
+
+Added new command `myworklog` that lists all work logged for the current user.
 
 Added new command `qjira_dump` that will list a single item including all fields in necessary format to use as configuration data, such as headers.
 
