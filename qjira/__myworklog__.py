@@ -29,6 +29,14 @@ def _open(filepath, encoding):
     else:
         return io.open(filepath, 'wb')
 
+def date_string(string):
+    '''Convert supplied string to a datetime.date() object.'''
+    try:
+        value = date_parser.parse(string)
+    except ValueError as ve:
+        raise argparse.ArgumentTypeError(ve)
+    return value.date()
+
 def create_parser(settings):
 
     base_url = settings.get('jira','base_url')
@@ -74,6 +82,19 @@ def create_parser(settings):
         default=None,
         help='Output file (.csv) [default: stdout]')
 
+
+    parser.add_argument('-S', '--start-date',
+        type=date_string,
+        metavar='yyyy/mm/dd',
+        default=None,
+        help='Exclude worklogDate before start date')
+
+    parser.add_argument('-E', '--end-date',
+        type=date_string,
+        metavar='yyyy/mm/dd',
+        default=None,
+        help='Exclude worklogDate after end date')
+    
     parser.set_defaults(func=WorklogCommand)
     
     return parser
