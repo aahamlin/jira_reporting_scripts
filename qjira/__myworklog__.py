@@ -42,8 +42,8 @@ def create_parser(settings):
     base_url = settings.get('jira','base_url')
     
     parser = argparse.ArgumentParser(
-        prog='qjira_dump',
-        description='Dump content of a single issuekey')
+        prog='myworklog',
+        description='Print totals of all worklogs authored by user.')
 
     parser.add_argument('-b', '--base',
         dest='base_url',
