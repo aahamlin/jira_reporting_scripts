@@ -230,6 +230,11 @@ def create_parser(settings):
         action='store_true',
         help='Restrict listings to authors provided.')
 
+    parser_worklog.add_argument('--total',
+        dest='total_by_username',
+        action='store_true',
+        help='Include total days per author')
+
     parser_worklog.set_defaults(func=WorklogCommand)
     
     parser_jql = subparsers.add_parser('jql',

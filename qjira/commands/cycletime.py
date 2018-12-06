@@ -58,6 +58,7 @@ class CycleTimeCommand(BaseCommand):
         status_cols = [
             ('.+_to_Ready','lead_begin', 'lt', False),
             ('.+_to_WorkInProgress','cycle_begin', 'lt', True),
+            ('.+_to_WorkInProgress','cycle_mid', 'gt', False),
             ('from_WorkInProgress_to_WorkCompleted', 'sub_cycle1_begin', 'gt', False),
             ('from_WorkCompleted_to_Resolved','sub_cycle1_end', 'gt', False),
             ('from_Resolved_to_VerifyingInProgress', 'sub_cycle2_begin', 'gt', True),
