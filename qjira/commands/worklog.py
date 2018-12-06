@@ -37,7 +37,7 @@ from ..jira import get_worklog
 from ..log import Log
 
 class WorklogCommand(BaseCommand):
-    def __init__(self, author=[], start_date=None, end_date=None, restrict_to_username=True, total_by_username=False, *args, **kwargs):
+    def __init__(self, author=[], start_date=None, end_date=None, group_by=None, restrict_to_username=True, total_by_username=False, *args, **kwargs):
         super(WorklogCommand, self).__init__('worklog', *args, **kwargs)
 
         if restrict_to_username and not author:
@@ -49,6 +49,7 @@ class WorklogCommand(BaseCommand):
         self._author = [a.lower() for a in author]
         self._restrict_to_username = restrict_to_username
         self._total_by_username = total_by_username
+        self._group_by = group_by
 
         self._start_date = start_date
         self._end_date = end_date
@@ -118,42 +119,78 @@ class WorklogCommand(BaseCommand):
             if author_name not in accumulated:
                 accumulated[author_name] = {}
 
+            activerow = accumulated[author_name]
+                
+            if self._group_by and self._group_by not in r:
+                raise Exception('group_by failed: column "%s" does not exist.' % self._group_by)
+
+            if self._group_by:
+                group_by = r[self._group_by]
+                if group_by not in accumulated[author_name]:
+                    accumulated[author_name][group_by] = {}
+
+                activerow = accumulated[author_name][group_by]
+            
             started = str(r['worklog_started'])
             
-            if started not in accumulated[author_name]:
-                accumulated[author_name][started] = {}
+            if started not in activerow:
+                activerow[started] = {}
 
-            if 'worklog_timeSpentSeconds' not in accumulated[author_name][started]:
-                accumulated[author_name][started]['worklog_timeSpentSeconds'] = 0
+            if 'worklog_timeSpentSeconds' not in activerow[started]:
+                activerow[started]['worklog_timeSpentSeconds'] = 0
                 
-            accumulated[author_name][started]['worklog_timeSpentSeconds'] = accumulated[author_name][started]['worklog_timeSpentSeconds'] + r['worklog_timeSpentSeconds']
+            activerow[started]['worklog_timeSpentSeconds'] = activerow[started]['worklog_timeSpentSeconds'] + r['worklog_timeSpentSeconds']
             
-            if 'issue_keys' not in accumulated[author_name][started]:
-                accumulated[author_name][started]['issue_keys'] = []
+            if 'issue_keys' not in activerow[started]:
+                activerow[started]['issue_keys'] = []
 
-            if r['issue_key'] not in accumulated[author_name][started]['issue_keys']:
-                accumulated[author_name][started]['issue_keys'].append(r['issue_key'])
+            if r['issue_key'] not in activerow[started]['issue_keys']:
+                activerow[started]['issue_keys'].append(r['issue_key'])
 
             if not self._total_by_username:
                 continue
                 
-            if date_max not in accumulated[author_name]:
-                accumulated[author_name][date_max] = {}
+            if date_max not in activerow:
+                activerow[date_max] = {}
 
-            if 'worklog_timeSpentSeconds' not in accumulated[author_name][date_max]:
-                accumulated[author_name][date_max]['worklog_timeSpentSeconds'] = 0
+            if 'worklog_timeSpentSeconds' not in activerow[date_max]:
+                activerow[date_max]['worklog_timeSpentSeconds'] = 0
 
-            accumulated[author_name][date_max]['worklog_timeSpentSeconds'] = accumulated[author_name][date_max]['worklog_timeSpentSeconds'] + r['worklog_timeSpentSeconds']
+            activerow[date_max]['worklog_timeSpentSeconds'] = activerow[date_max]['worklog_timeSpentSeconds'] + r['worklog_timeSpentSeconds']
 
-            if 'issue_keys' not in accumulated[author_name][date_max]:
-                accumulated[author_name][date_max]['issue_keys'] = [u'Total of entire time period']
-                
-        rows = [dict(worklog_timeSpentDays='{:.3f}'.format(v1['worklog_timeSpentSeconds']/60/60/8),
-                     issue_keys=' '.join(v1['issue_keys']),
-                     worklog_started=k1,
-                     worklog_author_name=k) for k,v in accumulated.items() for k1, v1 in v.items()]
+            if 'issue_keys' not in activerow[date_max]:
+                activerow[date_max]['issue_keys'] = [u'Total of entire time period']
+
+
+
+        rows = list(self.flatten_levels(accumulated))
+        #rows = [dict(worklog_timeSpentDays='{:.3f}'.format(v1['worklog_timeSpentSeconds']/60/60/8),
+        #             issue_keys=' '.join(v1['issue_keys']),
+        #             worklog_started=k1,
+        #             worklog_author_name=k) for k,v in accumulated.items() for k1, v1 in v.items()]
         
         rows = sorted(rows, key=itemgetter('worklog_started'))
         rows = sorted(rows, key=itemgetter('worklog_author_name'))
           
         return rows
+
+    def flatten_levels(self, accumulated):
+        if self._group_by:
+            for k, v in accumulated.items():
+                for k1, v1 in v.items():
+                    for k2, v2 in v1.items():
+                        yield dict(worklog_timeSpentDays='{:.3f}'
+                                   .format(v2['worklog_timeSpentSeconds']/60/60/8),
+                                   issue_keys=' '.join(v2['issue_keys']),
+                                   worklog_started=k2,
+                                   project_name=k1,
+                                   worklog_author_name=k)
+        else:
+            for k, v in accumulated.items():
+                for k1, v1 in v.items():
+                    yield dict(worklog_timeSpentDays='{:.3f}'
+                               .format(v1['worklog_timeSpentSeconds']/60/60/8),
+                               issue_keys=' '.join(v1['issue_keys']),
+                               worklog_started=k1,
+                               worklog_author_name=k)
+                    
