@@ -42,10 +42,12 @@ class WorklogCommand(BaseCommand):
 
         if restrict_to_username and not author:
             author = [self.kwargs.get('username')]
-            
-        if not author:
+
+        user_query = super(WorklogCommand, self).query
+        if not author and not user_query:
             raise TypeError('Missing required argument "author"')
 
+        self._base_query = user_query
         self._author = [a.lower() for a in author]
         self._restrict_to_username = restrict_to_username
         self._total_by_username = total_by_username
@@ -66,7 +68,12 @@ class WorklogCommand(BaseCommand):
     @property
     def query(self):
         """Build worklog author query"""
-        base_query = 'worklogAuthor in (%s)' % ', '.join(self._author)
+        
+        if self._base_query is not None:
+            base_query = self._base_query
+        else:
+            base_query = 'worklogAuthor in (%s)' % ', '.join(self._author)
+            
         if self._start_date and self._end_date:
             return ' AND '.join([base_query, 'worklogDate >= %s AND worklogDate <= %s' % (self._start_date, self._end_date)])
         elif self._start_date:
