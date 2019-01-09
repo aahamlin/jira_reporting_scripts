@@ -5,6 +5,11 @@ import re
 from functools import partial
 from collections import OrderedDict
 
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
 from .. import jira
 from .. import dataprocessor as dp
 from .. import unicode_csv_writer
@@ -100,8 +105,10 @@ class BaseCommand:
     @property
     def query(self):
         '''Return the JQL query for this command.'''
-        #raise NotImplementedError()
-        return settings.get(self._name, 'query')
+        try:
+            return settings.get(self._name, 'query')
+        except configparser.NoOptionError:
+            return None
 
     @property
     def writer(self):

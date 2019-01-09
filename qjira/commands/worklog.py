@@ -36,11 +36,6 @@ from .command import BaseCommand
 from ..jira import get_worklog
 from ..log import Log
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
 class WorklogCommand(BaseCommand):
     def __init__(self, author=[], start_date=None, end_date=None, group_by=None, restrict_to_username=True, total_by_username=False, *args, **kwargs):
         super(WorklogCommand, self).__init__('worklog', *args, **kwargs)
@@ -48,10 +43,7 @@ class WorklogCommand(BaseCommand):
         if restrict_to_username and not author:
             author = [self.kwargs.get('username')]
 
-        try:
-            user_query = super(WorklogCommand, self).query
-        except configparser.NoOptionError:
-            user_query = None
+        user_query = super(WorklogCommand, self).query
         
         if not author and not user_query:
             raise TypeError('Missing required argument "author"')
