@@ -63,27 +63,30 @@ Added the bug `backlog` command, prints all bugs by fix version.
 # Commands
 
 ```
-usage: qjira [-h] [-b URL] [-u USER] [-w PWD] [-d]
-             {cycletime,velocity,summary,debt,backlog,jql} ...
+usage: qjira [-h] [-b URL] [-u USER] [-w PWD] [-d] [-1]
+             {cycletime,velocity,summary,debt,backlog,worklog,jql} ...
 
 Exports data from Jira to CSV format
 
 optional arguments:
   -h, --help            show this help message and exit
-  -b URL, --base URL    Jira Cloud base URL [default: sailpoint.atlassian.net]
+  -b URL, --base URL    Jira Cloud base URL [default:
+                        https://yourusername.atlassian.net]
   -u USER, --user USER  Username, if blank will use logged on user
   -w PWD, --password PWD
                         Password (insecure), if blank will prommpt
-  -d                    Debug level
+  -d, --debug           Debug level
+  -1, --one-shot        Process single record only
 
 Available commands:
-  {cycletime,velocity,summary,debt,backlog,jql}
+  {cycletime,velocity,summary,debt,backlog,worklog,jql}
                         Available commands to process data
     cycletime           Produce cycletime data
     velocity            Produce velocity data
     summary             Produce summary report
     debt                Produce tech debt report
     backlog             Query bug backlog by fixVersion
+    worklog             Query worklog entries
     jql                 Query using JQL
 ```
 
@@ -241,6 +244,41 @@ optional arguments:
                         [fields=*navigable]
   -f VERSION, --fix-version VERSION
                         Restrict search to fixVersion(s)
+```
+
+## Worklog
+
+Downloads records of time spent logs by worklogAuthor.
+
+```
+usage: qjira worklog [-h] [-o [FILENAME]] [--no-progress] [--encoding ENC]
+                     [--delimiter CHAR] [-A] [-S yyyy/mm/dd] [-E yyyy/mm/dd]
+                     [--authors-only] [--total] [-G GROUP_BY]
+                     [AUTHOR [AUTHOR ...]]
+
+positional arguments:
+  AUTHOR                Author name(s)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o [FILENAME], --outfile [FILENAME]
+                        Output file (.csv) [default: stdout]
+  --no-progress         Hide data download progress
+  --encoding ENC        Specify an output encoding. In Python 2.x, only
+                        default ASCII is supported.
+  --delimiter CHAR      Specify a CSV delimiter [default: comma]. For bash
+                        support escape the character with $, such as $'\t'
+  -A, --all-fields      Extract all "navigable" fields in Jira,
+                        [fields=*navigable]
+  -S yyyy/mm/dd, --start-date yyyy/mm/dd
+                        Exclude worklogDate before start date
+  -E yyyy/mm/dd, --end-date yyyy/mm/dd
+                        Exclude worklogDate after end date
+  --authors-only        Restrict listings to authors provided.
+  --total               Include total days per author
+  -G GROUP_BY, --group-by GROUP_BY
+                        Group results by an arbitrary (existing) column, e.g.
+                        project_name.
 ```
 
 ## JQL Query
