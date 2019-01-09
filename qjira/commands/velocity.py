@@ -79,7 +79,7 @@ class VelocityCommand(BaseCommand):
             results[sprint_id].update({
                 'planned_effort': total_effort[0],
                 'carried_effort': total_effort[1],
-                self._effort_engine['effort_field']: total_effort[2],
+                self.effort_field: total_effort[2],
                 'completed_effort': total_effort[3]
             })
 
@@ -89,7 +89,7 @@ class VelocityCommand(BaseCommand):
         '''return point fields from row {r}'''
         return (r['planned_effort'],
                 r['carried_effort'],
-                r.get(self._effort_engine['effort_field'], 0),
+                r.get(self.effort_field, 0),
                 r['completed_effort'])
             
     def _raw_process(self, rows):
@@ -126,7 +126,7 @@ class VelocityCommand(BaseCommand):
                 counter = 0
             else:
                 counter += 1
-            effort_value = row.get(self._effort_engine['effort_field'], DEFAULT_POINTS)
+            effort_value = row.get(self.effort_field, DEFAULT_POINTS)
             planned_effort = effort_value if counter == 0 else DEFAULT_POINTS
             carried_effort = effort_value if counter >= 1 else DEFAULT_POINTS
             completed_effort = effort_value if self._isComplete(row) else DEFAULT_POINTS

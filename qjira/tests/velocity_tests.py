@@ -194,12 +194,12 @@ class TestVelocityTimeOriginalEstimate(test_util.MockJira, unittest.TestCase):
     def setUp(self):
         self.setup_mock_jira()
         #self._effort_field = settings['effort_engine']['effort_field']
-        settings.set('jira','default_effort_engine','timeoriginalestimate_engine')
+        settings.set('jira','default_effort_engine','engine_time')
         self.command_under_test = VelocityCommand(base_url='localhost:3000', project=['TEST'])
         
     def tearDown(self):
         self.teardown_mock_jira()
-        settings.set('jira','default_effort_engine', 'story_points_engine')
+        settings.set('jira','default_effort_engine', 'engine_points')
 
 
 #    def test_settings(self):

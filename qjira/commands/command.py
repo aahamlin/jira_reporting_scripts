@@ -50,9 +50,15 @@ class BaseCommand:
         self._pre_load = pre_load
 
         effort_engine_name = settings.get('jira','default_effort_engine')
-        self._effort_engine = dict(settings.items(effort_engine_name))
+        cfg = dict(settings.items(effort_engine_name))
+        self._effort_field_name = cfg['effort_field']
+        state_transitions_name = cfg['transitions']
+        self._state_transitions = [tuple([k]+v.split(',')) for k,v in settings.items(state_transitions_name)]
 
+        # TODO: add headers from effort engine to list
         self._header_keys = list(settings.get(self._name, 'headers').split(','))
+        
+
         
         self.kwargs = kwargs
         
@@ -63,10 +69,13 @@ class BaseCommand:
                        fields=self._get_jira_fields(),
                        **self.kwargs)
 
-    def _build_header_dict(self, keys):
-        header = OrderedDict(zip(keys, keys))
-        header.update({k:v for k,v in settings.items('headers') if k in keys})
-        return header
+    @property
+    def effort_field(self):
+        return self._effort_field_name
+
+    @property
+    def state_transitions(self):
+        return self._state_transitions
     
     @property
     def show_all_fields(self):
@@ -149,9 +158,9 @@ class BaseCommand:
         Otherwise, return the defined set of fields from the header property.
         '''
         if self.show_all_fields or not self.header:
-            return d.keys()
+            return list(d.keys())
         else:
-            return self.header_keys
+            return list(self.header.keys())
         
     def http_request(self):
         query_string = self._create_query_string()

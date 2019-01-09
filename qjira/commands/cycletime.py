@@ -7,9 +7,6 @@ from ..log import Log
 from .command import BaseCommand
 from ..dataprocessor import load_transitions
 
-def networkdays(start, end):
-    return '=NETWORKDAYS("{}","{}")'.format(start, end)
-
 class CycleTimeCommand(BaseCommand):
     '''Class encapsulating cycle time of an issue. This class will
    calculate the days from being moved to In Progress by devs
@@ -53,30 +50,18 @@ class CycleTimeCommand(BaseCommand):
         """
 
         accumulated = {}
-        # map date to status
-        # TODO update mapping & header property based on configuration from INI files
-        status_cols = [
-            ('.+_to_Ready','lead_begin', 'lt', False),
-            ('.+_to_WorkInProgress','cycle_begin', 'lt', True),
-            ('.+_to_WorkInProgress','cycle_mid', 'gt', False),
-            ('from_WorkInProgress_to_WorkCompleted', 'sub_cycle1_begin', 'gt', False),
-            ('from_WorkCompleted_to_Resolved','sub_cycle1_end', 'gt', False),
-            ('from_Resolved_to_VerifyingInProgress', 'sub_cycle2_begin', 'gt', True),
-            ('from_VerifyingInProgress_to_Resolved', 'sub_cycle2_end', 'gt', False),
-            ('(?!from_WorkCompleted).+_to_Resolved', 'cycle_end', 'gt', False),
-            ('.+_to_Resolved', 'lead_end', 'gt', False),
-           
-        ]
         
         for r in rows:
             issue_key = r['issue_key']
             if issue_key not in accumulated:
                 accumulated[issue_key] = {k:v for k,v in r.items() if k in ['project_key', 'fixVersions_0_name', 'issuetype_name','status_name']}
 
-            for tranz,col,srt,cnt in status_cols:
+            for col,tranz,srt,s_count in self.state_transitions:
+                
                 if col not in self._add_columns:
                     self._add_columns.append(col)
 
+                cnt = True if s_count == "True" else False
                 count_col = 'count_{0}'.format(col)
 
                 if cnt and count_col not in self._add_columns:

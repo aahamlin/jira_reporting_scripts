@@ -36,7 +36,9 @@ class TestJQLCommand(test_util.MockJira, unittest.TestCase):
             'issues': [bug]
         }
         row = next(self.command.execute())
-        cols = self.command.expand_header(row.keys())
+        print(row)
+        cols = self.command.expand_header(row)
+        print(cols)
         self.assertListEqual(['project_key', 'issue_key','issuetype_name',
                               'summary', 'status_name', 'assignee_name', 'sprint_0_name',
                               'fixVersions_0_name'], cols)
