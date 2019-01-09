@@ -1,4 +1,4 @@
-# Jira Reporting Scripts (0.99.19)
+# Jira Reporting Scripts (0.99.20)
 
 To address some of the deficiencies in Jira reporting, here is a small command line tool to 
 exercise the [Jira REST API](https://docs.atlassian.com/jira/REST/cloud/) to retrieve information about Stories,
@@ -13,8 +13,30 @@ You may want to view/download the [Quickstart Guide](doc/Quickstart.docx).
 ## Setup
 
 Initial configuration uses the dummy account name, yourusername.atlassian.net. This is stored in the `defaults.ini`
-file contained within the module itself. Users should create a user preference configuration at `$HOME/.qjira.ini` by
-copying `defaults.ini` to their home directory and modifying the `base_url` value.
+file contained within the module itself. At a minimum users should create a user preference configuration at `$HOME/.qjira.ini` setting the `base_url` value in the `jira` section. Users can also customize queries, switch between effort schemes (story points versus time-based), and customize the set of state transitions reported by the `cycletime` command.
+
+An example custom configuration:
+```
+[jira]
+base_url = http://nagtswjira:8080
+default_effort_engine = engine_time
+
+[site_transitions]
+lead_begin = .+_to_Ready,lt,False
+cycle_begin = .+_to_WorkInProgress,lt,True
+cycle_mid = .+_to_WorkInProgress,gt,False
+sub_cycle1_begin = from_WorkInProgress_to_WorkCompleted,gt,False
+sub_cycle1_end = from_WorkCompleted_to_Resolved,gt,False
+sub_cycle2_begin = from_Resolved_to_VerifyingInProgress,gt,True
+sub_cycle2_end = from_VerifyingInProgress_to_Resolved,gt,False
+cycle_end = (?!from_WorkCompleted).+_to_Resolved,gt,False
+lead_end = .+_to_Resolved,gt,False
+
+[cycletime]
+query = issuetype in ("new feature", improvement, bug) AND status in (Resolved, Closed) AND resolution = Verified
+transitions = site_transitions
+```
+
 
 **IMPORTANT NOTES**
 

@@ -27,6 +27,15 @@ class CycleTimeCommand(BaseCommand):
 
         self._add_columns = []
 
+        state_transitions_name = self._command_settings['transitions']
+        self._state_transitions = [tuple([k]+v.split(',')) for k,v in settings.items(state_transitions_name)]
+
+    @property
+    def state_transitions(self):
+        return self._state_transitions
+    
+
+
     @property
     def pivot_field(self):
         return 'transitions'

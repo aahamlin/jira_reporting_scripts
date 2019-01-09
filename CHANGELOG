@@ -1,3 +1,14 @@
+2019-01-09  Andrew Hamlin  <aahamlin@gmail.com>
+	* Version 0.99.20
+
+	* Added new programs `myworklog` and `qjira_dump`
+
+	* Added new command `worklog`
+
+	* Updated command `cycletime`
+
+	* Added support for different effort configurations, story points or time estimates
+	
 2018-02-28  Andrew Hamlin  <andrew.hamlin@sailpoint.com>
 
 	* Version 0.99.17

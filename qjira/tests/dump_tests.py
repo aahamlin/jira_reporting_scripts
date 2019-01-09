@@ -45,5 +45,5 @@ class TestDumpCLI(test_util.MockJira, unittest.TestCase):
             with redirect_stderr(self.std_err):
                 prog.main([ '-w', 'blah','ABC-123'])
 
-        print(self.std_out.getvalue())
-        
+        #print(self.std_out.getvalue())
+        self.assertIsNotNone(self.std_out.getvalue())

@@ -37,7 +37,7 @@ clean-all: clean
 	rm -fr _py3
 
 test:
-	python setup.py build test
+	env QJIRA_TESTMODE="Testing" python setup.py build test
 
 test-all: _py27 _py3
 	pushd _py27 && source bin/activate && $(MAKE) test && deactivate && popd
