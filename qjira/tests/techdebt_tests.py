@@ -23,8 +23,16 @@ class TestTechDebt(test_util.MockJira, unittest.TestCase):
     def test_query(self):
         self.assertEqual(
             'issuetype in (Story, Bug) AND status in (Accepted, Closed, Done)',
-            self.command_under_test .query)
+            self.command_under_test.query)
 
+    def test_header_contains_effort_header(self):
+        self.assertIn('story_points', self.command_under_test.header_keys)
+
+    def test_request_fields(self):
+        """Test that EngineMixin added effort request field"""
+        self.assertIn('customfield_10109', self.command_under_test.request_fields())
+        self.assertTrue(len(self.command_under_test.request_fields()) > 1)
+        
     def test_process(self):
         self.json_response = {
             'total': 2,

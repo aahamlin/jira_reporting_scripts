@@ -77,7 +77,7 @@ def _create_history(history):
         normalized_string = 'changed'
     created_date = date_parser.parse(history['created']).date()
     entry = _generate_name(field_name,normalized_string), created_date
-    #print ('Entry;',entry)
+    #print ('History:',entry)
     return entry
 
 def _transition(history):

@@ -39,9 +39,13 @@ clean-all: clean
 test:
 	env QJIRA_TESTMODE="Testing" python setup.py build test
 
-test-all: _py27 _py3
+test27:
 	pushd _py27 && source bin/activate && $(MAKE) test && deactivate && popd
+
+test3:
 	pushd _py3  && source bin/activate && $(MAKE) test && deactivate && popd
+
+test-all: test27 test3
 
 dist:
 	python setup.py bdist

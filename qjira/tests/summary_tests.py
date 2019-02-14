@@ -9,7 +9,7 @@ from qjira.commands import SummaryCommand
 from . import test_data
 from . import test_util
 
-class TestSummaryAsCSV(test_util.SPTestCase, test_util.MockJira, unittest.TestCase):
+class TestSummaryAsCSV(test_util.BaseTestCase, test_util.MockJira, unittest.TestCase):
 
     def setUp(self):
         self.setup_mock_jira()
@@ -68,7 +68,7 @@ class TestSummaryAsCSV(test_util.SPTestCase, test_util.MockJira, unittest.TestCa
         self.assertIsNot(self.command_under_test.writer, html_writer_cls)
 
         
-class TestSummaryNewOpt(test_util.SPTestCase, test_util.MockJira, unittest.TestCase):
+class TestSummaryNewOpt(test_util.BaseTestCase, test_util.MockJira, unittest.TestCase):
 
     def setUp(self):
         self.setup_mock_jira()
@@ -109,7 +109,7 @@ class TestSummaryNewOpt(test_util.SPTestCase, test_util.MockJira, unittest.TestC
         self.assertRegex_(data[1].get('design_doc_link'), '\[New\]')
         self.assertRegex_(data[1].get('testplan_doc_link'), '\[New\]')
 
-class TestSummaryAsHTML(test_util.SPTestCase, test_util.MockJira, unittest.TestCase):
+class TestSummaryAsHTML(test_util.BaseTestCase, test_util.MockJira, unittest.TestCase):
 
     def setUp(self):
         self.setup_mock_jira()

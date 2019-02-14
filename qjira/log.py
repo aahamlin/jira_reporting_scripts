@@ -1,5 +1,6 @@
 '''An ultra stupid logger'''
 import sys
+import os
 from six import text_type, print_
 
 class Log:
@@ -58,3 +59,8 @@ class Log:
         if Log.debugLevel < 2:
             return False
         return True
+
+    @staticmethod
+    def trace(msg):
+        if os.getenv('QJIRA_TRACE'):
+            Log.eprint('[TRACE] {0}'.format(msg))

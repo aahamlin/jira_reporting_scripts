@@ -53,7 +53,7 @@ def write(f, command, encoding, *args, **kwargs):
     '''
 
     header_done = False
-    fieldnames = lambda row: [_encode(encoding, s) for s in command.expand_header(row)]
+    fieldnames = lambda row: [_encode(encoding, s) for s in command.field_names(row)]
 
     _write_table_start(f)
     for row in command.execute():
@@ -64,7 +64,7 @@ def write(f, command, encoding, *args, **kwargs):
             _write_body_start(f)
 
         # perform unicode conversion 
-        unicode_row = {k:_encode(encoding, v) for k, v in row.items()}
+        unicode_row = {k:_encode(encoding, command.field_formatter(k)(v)) for k, v in row.items()}
 
         # begin rows, each grouping with table is marked with _row_header: True
         if '_row_header' in row and row['_row_header'] is True:

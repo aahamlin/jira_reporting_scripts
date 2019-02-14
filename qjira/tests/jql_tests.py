@@ -36,9 +36,9 @@ class TestJQLCommand(test_util.MockJira, unittest.TestCase):
             'issues': [bug]
         }
         row = next(self.command.execute())
-        print(row)
-        cols = self.command.expand_header(row)
-        print(cols)
+        #print(row)
+        cols = self.command.field_names(row)
+        #print(cols)
         self.assertListEqual(['project_key', 'issue_key','issuetype_name',
                               'summary', 'status_name', 'assignee_name', 'sprint_0_name',
                               'fixVersions_0_name'], cols)
@@ -53,7 +53,7 @@ class TestJQLCommandWithAdditionalFieldsColumns(test_util.MockJira, unittest.Tes
         self.teardown_mock_jira()
 
     def test_add_fields(self):
-        self.assertIn('customer', self.command.retrieve_fields(['foo', 'bar']))
+        self.assertIn('customer', self.command.request_fields())
 
     def test_add_columns(self):
-        self.assertIn('customer_0_value', self.command.expand_header({}))
+        self.assertIn('customer_0_value', self.command.field_names({}))

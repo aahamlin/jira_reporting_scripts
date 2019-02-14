@@ -39,4 +39,4 @@ class TestBacklog(test_util.MockJira, unittest.TestCase):
             'severity_value': 'Normal'
         }, data[0])
 
-        self.assertUrlPartsEqual('http://localhost:3000/rest/api/2/search?fields=-%2Anavigable%2Cproject%2Cissuetype%2Cstatus%2Csummary%2Cassignee%2CfixVersions%2Ccustomfield_10109%2Ccustomfield_10016%2Ccustomfield_10017%2Cpriority%2Ccreated%2Cupdated%2Ccustomfield_10112%2Ccustomfield_10400&jql=project+in+(TEST)+AND+issuetype+%3D+Bug+AND+resolution+%3D+Unresolved+ORDER+BY+priority+DESC&startAt=0&maxResults=50&expand=changelog', self.actual_url)
+        self.assertUrlPartsEqual('http://localhost:3000/rest/api/2/search?fields=-%2Anavigable%2Cproject%2Cissuetype%2Cstatus%2Csummary%2Cassignee%2CfixVersions%2Cpriority%2Ccreated%2Cupdated%2Ccustomfield_10112%2Ccustomfield_10400&jql=project+in+(TEST)+AND+issuetype+%3D+Bug+AND+resolution+%3D+Unresolved+ORDER+BY+priority+DESC&startAt=0&maxResults=50&expand=changelog', self.actual_url)

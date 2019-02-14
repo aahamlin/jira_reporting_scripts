@@ -1,5 +1,5 @@
 '''Executes simple queries of Jira Cloud REST API'''
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 import requests
 import datetime
 import json
@@ -14,7 +14,9 @@ except ImportError:
 from .config import settings
 from .log import Log
 
-CUSTOM_FIELD_MAP = dict(settings.items('custom_fields'))
+CUSTOM_NAME_MAP = dict(settings.items('custom_fields'))
+
+CUSTOM_FIELD_MAP = {v:k for k,v in CUSTOM_NAME_MAP.items()}
 
 ISSUE_ENDPOINT='{}/rest/api/2/issue/{}'
 
@@ -45,6 +47,11 @@ def extract_sprint(sprint):
         return d
     raise ValueError
 
+def customfield_value(name):
+    '''Lookup a Jira customfield_xxxxx value from the map.
+    Default return the name provided. So that standard Jira fields, such as 'priority'
+    can be added without additional configuration.'''
+    return CUSTOM_NAME_MAP.get(name, name)
 
 def _get_json(url, username=None, password=None, headers=HEADERS):
     r = requests.get(url, auth=(username, password), headers=headers)
@@ -59,8 +66,6 @@ def _as_data(issue, reverse_sprints=False):
     transforming the changelog history entries to permit tracing of events
     over time.
     """
-    if Log.isDebugEnabled():
-        Log.verbose('enter jira._as_data: issue, reverse_sprints={0}'.format(reverse_sprints))
     if Log.isVerboseEnabled():
         Log.verbose('jira json format: {0}'.format(
             json.dumps(issue, sort_keys=True, indent=4, separators=(',', ': '))))
@@ -69,10 +74,12 @@ def _as_data(issue, reverse_sprints=False):
         'issue_key':issue['key']
     }
     #copy in fields, replacing custom fields with mapped names
-    data.update({CUSTOM_FIELD_MAP.get(k, k):v for k, v in issue['fields'].items()})
+    data.update({CUSTOM_FIELD_MAP.get(k, k):v for k, v in issue['fields'].items() if k is not 'sprint'})
+    # find key corresponds to sprint
+    sprint_field = customfield_value('sprint')
     #copy in sprints
-    if issue['fields'].get('customfield_10016'):
-        sprints_encoded = issue['fields']['customfield_10016']
+    if issue['fields'].get(sprint_field):
+        sprints_encoded = issue['fields'][sprint_field]
         if sprints_encoded:
             #print('> as_data sprints_encoded: {0}'.format(sprints_encoded))
             data['sprint'] = [
@@ -90,14 +97,13 @@ def _as_data(issue, reverse_sprints=False):
     if Log.isVerboseEnabled():
         Log.verbose('qjira json format: {0}'.format(
             json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))))
-    if Log.isDebugEnabled():
-        Log.verbose('exit jira._as_data')
 
     return data
 
 def default_fields():
     '''Return fields to retrieve from Jira'''
-    return DEFAULT_FIELDS[:]
+    fields = DEFAULT_FIELDS[:]
+    return fields
 
 def get_worklog(baseUrl, issuekey, username=None, password=None):
     """Retrieve the worklog history for an issue."""

@@ -5,6 +5,8 @@ import re
 from functools import partial
 from collections import OrderedDict
 
+import json
+
 try:
     import configparser
 except ImportError:
@@ -16,7 +18,10 @@ from .. import unicode_csv_writer
 
 from ..log import Log
 from ..config import settings
-        
+
+
+header_formats = {'seconds_to_days':lambda x: '{0:.2f}'.format(x/60/60/8.0)}
+
 def query_builder(name, items):
     return '{0} in ({1})'.format(name, ','.join(items))
 
@@ -51,30 +56,54 @@ class BaseCommand:
         self._fixversions = fixversion
         self._all_fields = all_fields
         self._pivot_field = pivot_field
-        self._command_settings = dict(settings.items(self._name))
         self._pre_load = pre_load
-
-        effort_engine_name = settings.get('jira','default_effort_engine')
-        cfg = dict(settings.items(effort_engine_name))
-        
-        self._effort_field_name = cfg['effort_field']
-
-        # TODO: add headers from effort engine (cfg) to list
-        self._header_keys = list(self._command_settings['headers'].split(','))
-        
+        self._init(settings)
         self.kwargs = kwargs
+
+    def _init(self, settings):
+
+        self._command_settings = dict(settings.items(self._name))
+        self._story_types = settings.get('jira', 'story_types').lower().split(',')
+        self._complete_status = settings.get('jira', 'complete_status').split(',')
+        self._header_keys = list(self._command_settings['headers'].split(','))
+        self._header_key_name_map = {}
+        self._header_key_format_map = {}
+        for k,v in settings.items('headers'):
+            # key = name:formatter
+            # name is mandatory
+            # formatter is optional
+
+            if ':' not in v:
+                v += ':'
+            name, f = v.split(':')
+            if not name:
+                #print('Throw ValueError missing required value')
+                raise ValueError('header {0} is missing required value'.format(k))
+            self._header_key_name_map[k] = name
+            
+            if f:
+                if f not in header_formats:
+                    #print('Throw ValueError defines non-existent formatter')
+                    raise ValueError('header {0} defines non-existent formatter {1}'.format(k,f))
+                else:
+                    self._header_key_format_map[k] = header_formats[f]
         
     def _configure_http_request(self):
         '''Sub-classes can continue currying this function.'''
         return partial(jira.all_issues,
                        self._base_url,
-                       fields=self._get_jira_fields(),
+                       fields=self.request_fields(),
                        **self.kwargs)
 
     @property
-    def effort_field(self):
-        return self._effort_field_name
+    def command_settings(self):
+        return self._command_settings
 
+    # TODO: can this be part of effort engine?
+    @property
+    def complete_status(self):
+        return ['status_{0}'.format(s) for s in self._complete_status]
+    
     @property
     def show_all_fields(self):
         return self._all_fields
@@ -85,7 +114,8 @@ class BaseCommand:
         Return OrderedDict of CSV column keys and user-friendly names.
         '''
         header = OrderedDict(zip(self.header_keys, self.header_keys))
-        header.update({k:v for k,v in settings.items('headers') if k in self.header_keys})
+        
+        header.update({k:v for k,v in self._header_key_name_map.items() if k in self.header_keys})
 
         return header
     
@@ -110,14 +140,17 @@ class BaseCommand:
         Defines a single function matching: unicode_csv_writer.write'''
         return unicode_csv_writer
     
-    def retrieve_fields(self, default_fields):
-        '''Command may provide a set of Jira Fields. The provided list is
-        a copy of the default that can be modified, appended or replaced.
+    def request_fields(self):
+        '''Command may provide a set of Jira Fields.'''
+        fields = ['*navigable'] if self.show_all_fields else jira.default_fields()
+        if self.command_settings.get('additional_fields'):
+            # map back to Jira custom fields
+            customfield_names = self.command_settings['additional_fields'].split(',')
+            customfield_values = [jira.customfield_value(n) for n in customfield_names]
+            fields += customfield_values
+        Log.debug("Requested fields: {0}".format(fields))
+        return fields
 
-        Argument:
-        default_fields - list of default Jira fields
-        '''
-        return default_fields
 
     @property
     def count_fields(self):
@@ -130,7 +163,6 @@ class BaseCommand:
     @property
     def pivot_field(self):
         return self._pivot_field
-
     
     def _create_query_string(self):
         query = []
@@ -141,14 +173,21 @@ class BaseCommand:
         query.append(self.query)
         return ' AND '.join(query)
 
-    def _get_jira_fields(self):
-        if self.show_all_fields:
-            return self.retrieve_fields(['*navigable'])
-        else:
-            return self.retrieve_fields(jira.default_fields())
+    def is_story_type(self, item):
+        '''Return True if issuetype_name of {item} is in list of story types.'''
+        is_story = item['issuetype_name'].lower() in [t.lower() for t in self._story_types]
+        #print('> Item is a story? %s' % is_story)
+        return is_story
 
-    def expand_header(self, d):
-        '''Return a list of column names from a dict object.
+    def field_formatter(self, key):
+        '''Return a formatter for a field.'''
+        if key in self._header_key_format_map:
+            return self._header_key_format_map[key]
+        else:
+            return lambda x: x
+    
+    def field_names(self, item):
+        '''Return the desired keys from the {item}.
 
         If the command was launched with the show_all_fields option or does not supply a header list, 
         then use all keys of the provided row.
@@ -158,7 +197,7 @@ class BaseCommand:
         Otherwise, return the defined set of fields from the header property.
         '''
         if self.show_all_fields or not self.header:
-            return list(d.keys())
+            return list(item.keys())
         else:
             return list(self.header.keys())
         
@@ -177,17 +216,17 @@ class BaseCommand:
 
         pivot_on = self.pivot_field
         for x in generate_data:
+            Log.verbose(x['issue_key'])
+            #print(json.dumps(x, indent=4))
             if self._pre_load:
                 self._pre_load(x)
                 
             if pivot_on and pivot_on in x and x[pivot_on]:
                 pivots = copy.copy(x[pivot_on])
                 del x[pivot_on]
-                Log.debug('Pivot on field {0}, {1} item(s)'.format(pivot_on, len(pivots)))
-                #print('> pivot on {0} sprints'.format(len(sprints)))
+                Log.verbose('Pivot on field {0} with {1} item(s)'.format(pivot_on, len(pivots)))
                 # Create new json object for each pivot field
                 for pivot in pivots:
-                    #print('> next sprint: {0}'.format(sprint['name']))
                     y = {pivot_on: pivot}
                     y.update(x.copy())
                     yield y

@@ -32,7 +32,7 @@ from __future__ import division
 import copy
 from datetime import date
 from operator import itemgetter
-from .command import BaseCommand
+from .base_command import BaseCommand
 from ..jira import get_worklog
 from ..log import Log
 
@@ -140,6 +140,7 @@ class WorklogCommand(BaseCommand):
                 activerow = accumulated[author_name][group_by]
             
             started = str(r['worklog_started'])
+            print(type(r['worklog_started']), r['worklog_started'], type(started), started)
             
             if started not in activerow:
                 activerow[started] = {}

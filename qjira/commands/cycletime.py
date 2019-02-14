@@ -4,7 +4,7 @@ import re
 
 from ..config import settings
 from ..log import Log
-from .command import BaseCommand
+from .base_command import BaseCommand
 from ..dataprocessor import load_transitions
 
 class CycleTimeCommand(BaseCommand):
@@ -33,8 +33,6 @@ class CycleTimeCommand(BaseCommand):
     @property
     def state_transitions(self):
         return self._state_transitions
-    
-
 
     @property
     def pivot_field(self):

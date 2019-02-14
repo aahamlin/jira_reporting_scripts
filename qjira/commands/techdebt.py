@@ -4,19 +4,29 @@ Analyze progress of tech debt ratios completed. Story vs Bug points.
 from functools import partial, cmp_to_key, reduce as reduce_
 
 from ..config import settings
-from .command import BaseCommand
+from .base_command import BaseCommand
+from .engine_mixin import EngineMixin
 from ..log import Log
 
 DEFAULT_POINTS = 0.0
 TOTAL_COL = 'Grand Total'
 
-class TechDebtCommand(BaseCommand):
+class TechDebtCommand(BaseCommand, EngineMixin):
 
     def __init__(self, *args, **kwargs):
         super(TechDebtCommand, self).__init__('techdebt', *args, **kwargs)
+        EngineMixin.__init__(self)
+
+        self._header_keys += [self.effort_field]
+
+    def request_fields(self):
+        fields = super(TechDebtCommand, self).request_fields()
+        fields += EngineMixin.request_fields(self)
+        return fields
+
     
     def _format_points(self, f):
-        return '{:.0f}'.format(f)
+        return '{0:.0f}'.format(f)
 
     def _tech_debt_perc(self, val):
         '''Calculate percentage of tuple (bug,story)'''
@@ -32,9 +42,10 @@ class TechDebtCommand(BaseCommand):
         y is source row
         '''
         proj_name = y['project_name']
-        story_points = y.get('story_points') or 0
         
-        if y['issuetype_name'] == 'Story':
+        story_points = y.get(self.effort_field) or 0
+        
+        if self.is_story_type(y):
             item = (0, story_points)
         else:
             item = (story_points, 0)

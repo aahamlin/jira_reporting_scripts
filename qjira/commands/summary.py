@@ -8,7 +8,7 @@ import datetime
 
 from ..config import settings
 from ..log import Log
-from .command import BaseCommand
+from .base_command import BaseCommand
 from .. import jira
 from .. import summary_html_writer
 from ..dataprocessor import load_changelog
@@ -57,9 +57,6 @@ class SummaryCommand(BaseCommand):
             return super(SummaryCommand, self).writer
         else:
             return summary_html_writer
-    
-    def retrieve_fields(self, fields):
-        return fields + ['customfield_11101', 'customfield_14300']
     
     def _new_row(self):
         return {k:self.BLANK_CELL for k in self.header}

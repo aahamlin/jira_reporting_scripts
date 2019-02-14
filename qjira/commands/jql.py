@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from ..config import settings
-from .command import BaseCommand
+from .base_command import BaseCommand
 from .. import jira
 
 
@@ -41,9 +41,9 @@ class JQLCommand(BaseCommand):
         '''Return the user-provided JQL query'''
         return self._jql
 
-    def retrieve_fields(self, fields):
-        
+    def request_fields(self):
+        fields = super(JQLCommand, self).request_fields()
         if self._add_fields and len(self._add_fields)>0:
-            return fields + self._add_fields
-        else:
-            return fields
+            fields += self._add_fields
+
+        return fields

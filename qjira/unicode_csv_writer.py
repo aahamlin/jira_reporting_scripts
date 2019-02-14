@@ -13,7 +13,8 @@ def write(f, command, encoding, delimiter=','):
     '''
     writer = None
 
-    fieldnames = lambda row: [_encode(encoding, s) for s in command.expand_header(row)]
+    # TODO retrieve headers & formatting functions
+    fieldnames = lambda row: [_encode(encoding, s) for s in command.field_names(row)]
 
     for row in command.execute():
         if not writer:
@@ -21,6 +22,8 @@ def write(f, command, encoding, delimiter=','):
                                     dialect='excel',
                                     delimiter=delimiter,
                                     extrasaction='ignore')
+            # TODO print the human-readable names
             writer.writerow(command.header)
 
-        writer.writerow({k: _encode(encoding, v) for k, v in row.items()})
+        # TODO format values if specified
+        writer.writerow({k: _encode(encoding, command.field_formatter(k)(v)) for k, v in row.items() })

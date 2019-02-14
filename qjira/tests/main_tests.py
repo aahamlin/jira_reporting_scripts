@@ -45,7 +45,7 @@ class TestableKeyring(keyring.backend.KeyringBackend):
         del self.entries[key]
     
 
-class TestMainCLI(test_util.SPTestCase, test_util.MockJira, unittest.TestCase):
+class TestMainCLI(test_util.BaseTestCase, test_util.MockJira, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):

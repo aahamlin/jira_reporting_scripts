@@ -12,9 +12,20 @@ except ImportError:
 
 import qjira.jira as _jira
 
+from qjira.commands import BaseCommand
+
 PY3 = sys.version_info > (3,)
 
-class SPTestCase(object):
+class TestCommand(BaseCommand):
+
+    def __init__(self, *args, **kwargs):
+        super(TestCommand, self).__init__('test', *args, **kwargs)
+        
+    @property
+    def query(self):
+        return ''
+
+class BaseTestCase(object):
 
     def assertRegex_(self, a, re):
         if PY3:
@@ -27,6 +38,12 @@ class SPTestCase(object):
             self.assertNotRegex(a, re)
         else:
             self.assertNotRegexpMatches(a, re)
+
+    def assertRaisesRegex_(self, a, re):
+        if PY3:
+            return self.assertRaisesRegex(a, re)
+        else:
+            return self.assertRaisesRegexp(a, re)
 
 class MockJira(object):
     '''Mixin for mocking calls to jira.py.
@@ -120,3 +137,8 @@ def isgenerator(iterable):
         return True
     else:
         return False
+
+def getColumns(val, lineno=0):
+    lines = val.splitlines()
+    cols = lines[lineno].split(',')
+    return cols

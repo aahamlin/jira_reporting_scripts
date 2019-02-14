@@ -18,13 +18,7 @@ from .config import settings
 from . import Log
 from . import credential_store as creds
 
-from .commands import VelocityCommand
-from .commands import CycleTimeCommand
-from .commands import SummaryCommand
-from .commands import TechDebtCommand
-from .commands import BacklogCommand
-from .commands import WorklogCommand
-from .commands import JQLCommand
+from .commands import *
 
 PY3 = sys.version_info > (3,)
 
@@ -149,6 +143,7 @@ def create_parser(settings):
         metavar='project',
         help='Project name')
 
+    # TODO add an arbitrary query option, mutually exclusive to fixversion & projects
     
     parser_cycletime = subparsers.add_parser('cycletime',
         parents=[parser_command_options],

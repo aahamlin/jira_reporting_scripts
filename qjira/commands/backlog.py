@@ -6,7 +6,7 @@ for example.
 """
 
 from ..config import settings
-from .command import BaseCommand
+from .base_command import BaseCommand
 from ..log import Log
 
 class BacklogCommand(BaseCommand):
@@ -18,6 +18,3 @@ class BacklogCommand(BaseCommand):
     def count_fields(self):
         return ['customer']
 
-    def retrieve_fields(self, fields):
-        return fields + ['priority','created','updated','customfield_10112',
-                         'customfield_10400']

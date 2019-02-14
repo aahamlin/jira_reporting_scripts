@@ -1,10 +1,7 @@
 import unittest
 import datetime
-from copy import copy
 
 from qjira.commands import VelocityCommand
-from qjira import Log
-
 from qjira.config import settings
 
 from . import test_data
@@ -21,10 +18,21 @@ class TestVelocity(test_util.MockJira, unittest.TestCase):
         
     def test_header(self):
         self.assertIsInstance(self.command_under_test.header_keys, list)
+
+    def test_header_contains_effort_header(self):
+        self.assertIn('story_points', self.command_under_test.header_keys)
+        self.assertIn('planned_story_points', self.command_under_test.header_keys)
+        self.assertIn('carried_story_points', self.command_under_test.header_keys)
+        self.assertIn('completed_story_points', self.command_under_test.header_keys)
         
     def test_query(self):
         self.assertEqual('issuetype = Story', self.command_under_test.query)
 
+    def test_request_fields(self):
+        """Test that EngineMixin added effort request field"""
+        self.assertIn('customfield_10109', self.command_under_test.request_fields())
+        self.assertTrue(len(self.command_under_test.request_fields()) > 1)
+        
     def test_process_0(self):
         data = list(self.command_under_test.execute())
         self.assertEqual(len(data), 0)
@@ -50,17 +58,17 @@ class TestVelocity(test_util.MockJira, unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictContainsSubset({
             'sprint_name':'Chambers Sprint 9',
-            'planned_effort': 6.0,
-            'carried_effort': 0.0,
+            'planned_story_points': 6.0,
+            'carried_story_points': 0.0,
             'story_points': 6.0,
-            'completed_effort': 3.0
+            'completed_story_points': 3.0
         }, data[0])
         self.assertDictContainsSubset({
             'sprint_name': 'Chambers Sprint 10',
-            'planned_effort': 0.0,
-            'carried_effort': 3.0,
+            'planned_story_points': 0.0,
+            'carried_story_points': 3.0,
             'story_points': 3.0,
-            'completed_effort': 3.0
+            'completed_story_points': 3.0
         }, data[1])
 
     def test_process_bugs_in_stories_only(self):
@@ -81,10 +89,10 @@ class TestVelocity(test_util.MockJira, unittest.TestCase):
         self.assertEqual(len(data), 1)
         self.assertDictContainsSubset({
             'sprint_name':'Chambers Sprint 9',
-            'planned_effort': 3.0,
-            'carried_effort': 0.0,
+            'planned_story_points': 3.0,
+            'carried_story_points': 0.0,
             'story_points': 3.0,
-            'completed_effort': 3.0
+            'completed_story_points': 3.0
         }, data[0])
 
     def test_process_bugs_in_filtered_range_min(self):
@@ -153,9 +161,9 @@ class TestVelocityWithBugs(test_util.MockJira, unittest.TestCase):
         data = list(self.command_under_test.execute())
         
         self.assertEqual(len(data), 1)
-        self.assertDictContainsSubset({'planned_effort': 3.0,
-                                       'carried_effort': 0.0,
-                                       'completed_effort': 3.0},
+        self.assertDictContainsSubset({'planned_story_points': 3.0,
+                                       'carried_story_points': 0.0,
+                                       'completed_story_points': 3.0},
                                       data[0])
 
 class TestVelocityWithForecast(test_util.MockJira, unittest.TestCase):
@@ -184,28 +192,34 @@ class TestVelocityWithForecast(test_util.MockJira, unittest.TestCase):
         data = list(self.command_under_test.execute())
         self.assertEqual(len(data), 1)
         self.assertDictContainsSubset({
-            'planned_effort': 5.0,
-            'carried_effort': 0.0,
-            'completed_effort': 0.0
+            'planned_story_points': 5.0,
+            'carried_story_points': 0.0,
+            'completed_story_points': 0.0
         }, data[0])
 
 class TestVelocityTimeOriginalEstimate(test_util.MockJira, unittest.TestCase):
 
     def setUp(self):
         self.setup_mock_jira()
-        #self._effort_field = settings['effort_engine']['effort_field']
         settings.set('jira','default_effort_engine','engine_time')
+        settings.set('jira','story_types','Story,Feature')
+        settings.set('jira','complete_status','Resolved,Closed,Done')
+        
         self.command_under_test = VelocityCommand(base_url='localhost:3000', project=['TEST'])
         
     def tearDown(self):
         self.teardown_mock_jira()
         settings.set('jira','default_effort_engine', 'engine_points')
+        settings.set('jira','complete_status','Closed,Done')
 
+    def test_header_contains_effort_header(self):
+        # TODO velocity command includes all effort engine headers
+        self.assertIn('timeoriginalestimate', self.command_under_test.header_keys)
+        self.assertIn('planned_timeoriginalestimate', self.command_under_test.header_keys)
+        self.assertIn('carried_timeoriginalestimate', self.command_under_test.header_keys)
+        self.assertIn('completed_timeoriginalestimate', self.command_under_test.header_keys)
 
-#    def test_settings(self):
-#        '''Velocity Command will process timeoriginalestimate setting'''
-#        self.assertEqual(u'timeoriginalestimate', self.command_under_test._effort_field)
-
+        
     def test_process(self):
         '''The velocity command will calculate the planned original estimate when a story 
         enters a sprint, the carried estimate when a story is not complete and
@@ -227,16 +241,15 @@ class TestVelocityTimeOriginalEstimate(test_util.MockJira, unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictContainsSubset({
             'sprint_name':'Chambers Sprint 9',
-            'planned_effort': 57600,
-            'carried_effort': 0,
+            'planned_timeoriginalestimate': 57600,
+            'carried_timeoriginalestimate': 0,
             'timeoriginalestimate': 57600,
-            'completed_effort': 28800
+            'completed_timeoriginalestimate': 28800
         }, data[0])
         self.assertDictContainsSubset({
             'sprint_name': 'Chambers Sprint 10',
-            'planned_effort': 0,
-            'carried_effort': 28800,
+            'planned_timeoriginalestimate': 0,
+            'carried_timeoriginalestimate': 28800,
             'timeoriginalestimate': 28800,
-            'completed_effort': 28800
+            'completed_timeoriginalestimate': 28800
         }, data[1])
-    

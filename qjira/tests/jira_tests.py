@@ -25,7 +25,7 @@ class TestJiraFunc(test_util.MockJira, unittest.TestCase):
     def test_get_project_issues(self):
         """test that all expected fields are urlencoded properly""" 
 
-        expectedUrl = 'http://localhost:3000/rest/api/2/search?fields=-%2Anavigable%2Cproject%2Cissuetype%2Cstatus%2Csummary%2Cassignee%2CfixVersions%2Ccustomfield_10109%2Ccustomfield_10016%2Ccustomfield_10017&jql=issuetype+%3D+Story&maxResults=50&expand=changelog&startAt=0&'
+        expectedUrl = 'http://localhost:3000/rest/api/2/search?fields=-%2Anavigable%2Cproject%2Cissuetype%2Cstatus%2Csummary%2Cassignee%2CfixVersions&jql=issuetype+%3D+Story&maxResults=50&expand=changelog&startAt=0&'
         try:
             next(j.all_issues(TEST_BASE_URL, 'issuetype = Story'))
         except StopIteration:
@@ -54,7 +54,7 @@ class TestJiraFunc(test_util.MockJira, unittest.TestCase):
         load_changelog(data)
         self.assertDictContainsSubset(
             {
-                'issue_key':124,
+                'issue_key':'124',
                 'story_points': 3.0,
                 'testplan_doc_link': 'https://harbor.sailpoint.com/docs/DOC-20236',
                 'design_doc_link': 'https://harbor.sailpoint.com/docs/DOC-19296',
