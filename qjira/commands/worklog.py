@@ -140,7 +140,7 @@ class WorklogCommand(BaseCommand):
                 activerow = accumulated[author_name][group_by]
             
             started = str(r['worklog_started'])
-            print(type(r['worklog_started']), r['worklog_started'], type(started), started)
+            #print(type(r['worklog_started']), r['worklog_started'], type(started), started)
             
             if started not in activerow:
                 activerow[started] = {}

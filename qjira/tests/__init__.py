@@ -39,11 +39,9 @@ def suite():
 
 def __suite():
     suite = unittest.TestSuite()
-    #suite.addTest(unicode_csv_writer_tests.TestUnicodeWriter('test_header_written_ok'))
-    #suite.addTest(backlog_tests.TestBacklog('test_process_1'))
-    suite.addTest(velocity_tests.TestVelocity('test_process'))
+    #suite.addTest(velocity_tests.TestVelocity('test_process'))
     #suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(unicode_csv_writer_tests))
-    #suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(base_command_tests.BaseCommandHeaderWithFormatterTestCase))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromModule(worklog_tests))
     return suite
 
 if __name__ == '__main__':
