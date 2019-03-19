@@ -17,9 +17,7 @@ from .commands import JQLCommand
 
 def dump_command(command, encoding):
     headers = dict(settings.items('headers'))
-    Log.debug(headers)
     issue = next(command.execute())
-    Log.debug('Retrieved {}'.format(issue))
     for k in sorted(issue):
         _k = _encode(encoding, k)
         _v = _encode(encoding, headers.get(k.lower()))
@@ -61,7 +59,12 @@ def create_parser(settings):
         metavar='ENC',
         default='ASCII',
         help='Specify an output encoding. In Python 2.x, only default ASCII is supported.')
-    
+
+    parser.add_argument('--add-field', '-f',
+        action='append',
+        metavar='NAME',
+        help='Add field(s) to Jira request')
+
     parser.add_argument('issuekey',
         help='Provide an issuekey value.')
 

@@ -230,8 +230,8 @@ def create_parser(settings):
         action='store_true',
         help='Include total days per author')
 
-    parser_worklog.add_argument('-G', '--group-by',
-        help='Group results by an arbitrary (existing) column, e.g. project_name.')
+#    parser_worklog.add_argument('-G', '--group-by',
+#        help='Group results by an arbitrary (existing) column, e.g. project_name.')
 
     parser_worklog.set_defaults(func=WorklogCommand)
     

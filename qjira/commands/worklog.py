@@ -69,11 +69,10 @@ class WorklogCommand(BaseCommand):
     @property
     def query(self):
         """Build worklog author query"""
-        
+
+        base_query = 'worklogAuthor in (%s)' % ', '.join(self._author)
         if self._base_query is not None:
-            base_query = self._base_query
-        else:
-            base_query = 'worklogAuthor in (%s)' % ', '.join(self._author)
+            base_query = ' AND '.join([self._base_query, base_query])
             
         if self._start_date and self._end_date:
             return ' AND '.join([base_query, 'worklogDate >= %s AND worklogDate <= %s' % (self._start_date, self._end_date)])
