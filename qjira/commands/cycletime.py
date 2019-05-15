@@ -61,7 +61,7 @@ class CycleTimeCommand(BaseCommand):
         for r in rows:
             issue_key = r['issue_key']
             if issue_key not in accumulated:
-                accumulated[issue_key] = {k:v for k,v in r.items() if k in ['project_key', 'fixVersions_0_name', 'issuetype_name','status_name']}
+                accumulated[issue_key] = {k:v for k,v in r.items() if k in self.header_keys}
 
             for col,tranz,srt,s_count in self.state_transitions:
                 
