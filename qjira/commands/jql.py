@@ -16,7 +16,7 @@ class JQLCommand(BaseCommand):
     '''
     
     def __init__(self, jql=None, add_field=None, add_column=None, *args, **kwargs):
-        super(JQLCommand, self).__init__('jql', *args, **kwargs)
+        super(JQLCommand, self).__init__('jql', reverse_sprints=True, *args, **kwargs)
 
         if not jql:
             raise TypeError('Missing keyword "jql"')
